@@ -1,5 +1,7 @@
 # SwiftUtilityKit
 
+[中文](./README.md) | [English](./README_EN.md) | [Auto Language (GitHub Pages)](./docs/index.html)
+
 A Swift utility toolkit for daily conversions (Chinese-first defaults):
 - Default date context: `zh_CN + Asia/Shanghai + Gregorian`
 - Covers units, date/time, money, percentage, colors, string validation/formatting, device and app info
