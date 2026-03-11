@@ -8,7 +8,7 @@ Swift 常用转换工具库（默认中文语境）：
 
 ## 演示视频
 
-- 点击观看：[SwiftUtilityKit Demo Video](./docs/media/demo.mp4)
+- 点击观看：[SwiftUtilityKit Demo Video](https://github.com/snoux/SwiftUtilityKit/releases/download/1.0.0/demo.mp4)
 
 ---
 

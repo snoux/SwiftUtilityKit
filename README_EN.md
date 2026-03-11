@@ -8,7 +8,7 @@ A Swift utility toolkit for daily conversions (Chinese-first defaults):
 
 ## Demo Video
 
-- Watch here: [SwiftUtilityKit Demo Video](./docs/media/demo.mp4)
+- Watch here: [SwiftUtilityKit Demo Video](https://github.com/snoux/SwiftUtilityKit/releases/download/1.0.0/demo.mp4)
 
 ---
 
