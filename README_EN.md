@@ -72,6 +72,7 @@ let text = try "1704067200".dateStringFromTimestamp(unit: .second, format: "yyyy
 
 ```swift
 let fen = try "12.34".convertMoney(from: .major, to: .minor, currency: .cny) // CNY yuan -> fen = 1234
+let text = try "1234567.8".formattedMoney(scale: 2, useGrouping: true) // Grouped money text -> 1,234,567.80
 ```
 
 ### 2.8 Percentage conversion
@@ -120,6 +121,10 @@ let sys = DeviceInfo.systemVersion // Get system version
 let model = DeviceInfo.modelName // Get human-readable device model name
 let app = DeviceInfo.appVersionWithBuild // Get app version + build
 let px = DeviceInfo.pixelResolutionText // Get physical screen resolution in pixels
+let battery = DeviceInfo.batteryPercentageText // Get battery percentage text
+let total = DeviceInfo.totalDiskSpaceText // Get total device storage text
+let free = DeviceInfo.freeDiskSpaceText // Get free device storage text
+let used = DeviceInfo.usedDiskSpaceText // Get used device storage text
 ```
 
 ### 2.14 Coordinate conversion (`CLLocationCoordinate2D`)
@@ -328,11 +333,13 @@ Description: Same-currency unit conversion only (no FX). Uses `Decimal` for prec
 - `MoneyConversion.convert(_:from:to:currency:)`
 - `MoneyConversion.splitCNY(_:)`
 - `MoneyConversion.mergeCNY(yuan:jiao:fen:)`
+- `MoneyConversion.format(_:scale:useGrouping:locale:)`
 
 ### 8.3 Extension APIs
 For `String / BinaryInteger / BinaryFloatingPoint / Decimal`:
 - `convertMoney(from:to:currency:)`
-- `convertMoneyString(from:to:currency:scale:)`
+- `convertMoneyString(from:to:currency:scale:useGrouping:)`
+- `formattedMoney(scale:useGrouping:)`
 
 For `Decimal`:
 - `splitCNY()`
@@ -365,13 +372,20 @@ Description: Convert among color string/int/hex and platform color types.
 ### 10.1 `ColorRGBA`
 - `init(red:green:blue:alpha:)`
 - `parse(_:)`
+- `fromRGBString(_:)`
 - `fromPackedInt(_:hasAlpha:)`
 - `hexString(includeAlpha:prefixHash:)`
 - `packedInt(includeAlpha:)`
 
 ### 10.2 String / Integer APIs
-- String: `toColorRGBA / normalizedColorHex / colorToPackedInt`
+- String: `toColorRGBA / normalizedColorHex / colorToPackedInt / toCGColor / toUIColor / toSwiftUIColor`
 - BinaryInteger: `toColorRGBA(hasAlpha:) / toColorHex(hasAlpha:prefixHash:)`
+
+### 10.2.1 Color factory functions (direct style)
+- `colorRGBA(_:)`: create `ColorRGBA` directly from string
+- `cgColor(_:) / cgcolor(_:)`: create `CGColor` directly from string
+- `uiColor(_:) / uicolor(_:)`: create `UIColor` directly from string (UIKit)
+- `swiftUIColor(_:)`: create `SwiftUI.Color` directly from string
 
 ### 10.3 Platform bridge
 For `ColorRGBA`:
@@ -385,6 +399,9 @@ For `ColorRGBA`:
 
 For `UIColor` (UIKit):
 - `init(_ color: ColorRGBA)`
+- `init(hex:)`
+- `init(rgbString:)`
+- `init(colorString:)`
 - `toColorRGBA()`
 
 For `Color` (SwiftUI + UIKit bridge):
@@ -410,6 +427,17 @@ Description: Read system version, device model, app version, and screen resoluti
 - `DeviceInfo.pixelResolutionText`: physical resolution text (e.g. `1179x2556 px`)
 - `DeviceInfo.screenScale`: screen scale
 - `DeviceInfo.nativeScale`: native screen scale
+- `DeviceInfo.batteryLevel`: battery level (0...1, `nil` if unavailable)
+- `DeviceInfo.batteryPercentage`: battery percentage (0...100, `nil` if unavailable)
+- `DeviceInfo.batteryPercentageText`: battery percentage text (e.g. `80%`, `未知` if unavailable)
+- `DeviceInfo.batteryState`: battery state (`UIDevice.BatteryState`)
+- `DeviceInfo.batteryStateText`: battery state text (`未知 / 未充电 / 充电中 / 已充满`)
+- `DeviceInfo.totalDiskSpace`: total device storage in bytes
+- `DeviceInfo.freeDiskSpace`: free device storage in bytes
+- `DeviceInfo.usedDiskSpace`: used device storage in bytes
+- `DeviceInfo.totalDiskSpaceText`: total storage text (e.g. `256 GB`)
+- `DeviceInfo.freeDiskSpaceText`: free storage text (e.g. `120 GB`)
+- `DeviceInfo.usedDiskSpaceText`: used storage text (e.g. `136 GB`)
 
 ### 11.2 Extension APIs
 - `UIDevice.utilityModelIdentifier`: device model identifier

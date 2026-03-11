@@ -5,6 +5,11 @@ import CoreGraphics
 public extension ColorRGBA {
     /// 使用 0...1 范围的浮点通道创建颜色。
     ///
+    /// - Parameters:
+    ///   - red: 红色通道（0...1）。
+    ///   - green: 绿色通道（0...1）。
+    ///   - blue: 蓝色通道（0...1）。
+    ///   - alpha: 透明度（0...1）。
     /// - Throws: `ConversionError.invalidColor`
     init(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) throws {
         let r = Int((red * 255).rounded())
@@ -16,9 +21,22 @@ public extension ColorRGBA {
 
     /// 快速通过十六进制字符串创建颜色。
     ///
+    /// - Parameter hex: HEX 颜色字符串。
+    /// - Returns: 解析后的颜色。
     /// - Throws: `ConversionError.invalidColor`
     static func fromHex(_ hex: String) throws -> ColorRGBA {
         try parse(hex)
+    }
+
+    /// 快速通过 RGB/RGBA 字符串创建颜色。
+    ///
+    /// 例如：`rgb(255,102,0)`、`rgba(255,102,0,0.5)`。
+    ///
+    /// - Parameter text: RGB/RGBA 颜色字符串。
+    /// - Returns: 解析后的颜色。
+    /// - Throws: `ConversionError.invalidColor`
+    static func fromRGBString(_ text: String) throws -> ColorRGBA {
+        try parse(text)
     }
 
     /// 转为 `CGColor`。
@@ -36,6 +54,8 @@ public extension ColorRGBA {
 
     /// 从 `CGColor` 创建 `ColorRGBA`。
     ///
+    /// - Parameter cgColor: 输入 `CGColor`。
+    /// - Returns: 解析后的颜色。
     /// - Throws: `ConversionError.invalidColor`
     init(cgColor: CGColor) throws {
         let space = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
@@ -85,6 +105,8 @@ public extension ColorRGBA {
 
     /// 从 `UIColor` 创建 `ColorRGBA`。
     ///
+    /// - Parameter uiColor: 输入 `UIColor`。
+    /// - Returns: 解析后的颜色。
     /// - Throws: `ConversionError.invalidColor`
     init(uiColor: UIColor) throws {
         var redValue: CGFloat = 0
@@ -117,8 +139,38 @@ public extension UIColor {
     func toColorRGBA() throws -> ColorRGBA {
         try ColorRGBA(uiColor: self)
     }
+
+    /// 通过 HEX 字符串创建 `UIColor`。
+    ///
+    /// - Throws: `ConversionError.invalidColor`
+    convenience init(hex: String) throws {
+        self.init(try ColorRGBA.fromHex(hex))
+    }
+
+    /// 通过 RGB/RGBA 字符串创建 `UIColor`。
+    ///
+    /// - Throws: `ConversionError.invalidColor`
+    convenience init(rgbString: String) throws {
+        self.init(try ColorRGBA.fromRGBString(rgbString))
+    }
+
+    /// 通过颜色字符串创建 `UIColor`（支持 HEX/RGB/RGBA）。
+    ///
+    /// - Throws: `ConversionError.invalidColor`
+    convenience init(colorString: String) throws {
+        self.init(try ColorRGBA.parse(colorString))
+    }
 }
 #endif
+
+public extension String {
+    /// 颜色字符串转 `CGColor`（支持 HEX/RGB/RGBA）。
+    ///
+    /// - Throws: `ConversionError.invalidColor`
+    func toCGColor() throws -> CGColor {
+        try ColorRGBA.parse(self).cgColor
+    }
+}
 
 #if canImport(SwiftUI)
 import SwiftUI
@@ -138,6 +190,15 @@ public extension ColorRGBA {
 }
 
 #if canImport(UIKit)
+public extension String {
+    /// 颜色字符串转 `UIColor`（支持 HEX/RGB/RGBA）。
+    ///
+    /// - Throws: `ConversionError.invalidColor`
+    func toUIColor() throws -> UIColor {
+        try UIColor(colorString: self)
+    }
+}
+
 @available(iOS 14.0, tvOS 14.0, watchOS 7.0, *)
 public extension Color {
     /// 转为 `ColorRGBA`（iOS/tvOS/watchOS 通过 UIKit 桥接）。
@@ -145,6 +206,16 @@ public extension Color {
     /// - Throws: `ConversionError.invalidColor`
     func toColorRGBA() throws -> ColorRGBA {
         try UIColor(self).toColorRGBA()
+    }
+}
+
+@available(iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+public extension String {
+    /// 颜色字符串转 `SwiftUI.Color`（支持 HEX/RGB/RGBA）。
+    ///
+    /// - Throws: `ConversionError.invalidColor`
+    func toSwiftUIColor() throws -> Color {
+        try ColorRGBA.parse(self).swiftUIColor
     }
 }
 #endif

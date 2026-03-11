@@ -18,6 +18,8 @@ public extension String {
 
     /// 百分数转比率并输出字符串。
     ///
+    /// - Parameter scale: 小数位（可选）。
+    /// - Returns: 比率字符串。
     /// - Throws: `ConversionError.invalidNumber`
     func percentToRatioString(scale: Int? = nil) throws -> String {
         try percentToRatio().stringValue(scale: scale)
@@ -25,6 +27,8 @@ public extension String {
 
     /// 比率转百分数并输出字符串。
     ///
+    /// - Parameter scale: 小数位（可选）。
+    /// - Returns: 百分数字符串。
     /// - Throws: `ConversionError.invalidNumber`
     func ratioToPercentString(scale: Int? = nil) throws -> String {
         try ratioToPercent().stringValue(scale: scale)
@@ -74,6 +78,9 @@ public extension Decimal {
     }
 
     /// 百分数字符串形式。
+    ///
+    /// - Parameter scale: 小数位（可选）。
+    /// - Returns: 百分数字符串。
     func asPercentString(scale: Int? = nil) -> String {
         ratioToPercent().stringValue(scale: scale)
     }

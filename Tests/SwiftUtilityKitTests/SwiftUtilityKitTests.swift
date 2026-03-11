@@ -63,6 +63,24 @@ struct SwiftUtilityKitTests {
 
         let fromInt = try 0x3366CC.toColorHex()
         #expect(fromInt == "#3366CC")
+
+        let fromHex = try ColorRGBA.fromHex("#3366CC")
+        #expect(fromHex.hexString() == "#3366CC")
+
+        let fromRGB = try ColorRGBA.fromRGBString("rgba(255,102,0,0.5)")
+        #expect(fromRGB.hexString(includeAlpha: true) == "#FF66007F")
+
+        let cg = try "#3366CC".toCGColor()
+        let backFromCG = try ColorRGBA(cgColor: cg)
+        #expect(backFromCG.hexString() == "#3366CC")
+
+        let cg1 = try cgColor("#3366CC")
+        let back1 = try ColorRGBA(cgColor: cg1)
+        #expect(back1.hexString() == "#3366CC")
+
+        let cg2 = try cgcolor("rgb(255,102,0)")
+        let back2 = try ColorRGBA(cgColor: cg2)
+        #expect(back2.hexString() == "#FF6600")
     }
 
     @Test("Date conversion and comparison")
@@ -196,6 +214,18 @@ struct SwiftUtilityKitTests {
 
         let merged = CNYParts(yuan: 1234, jiao: 5, fen: 6).toDecimalYuan()
         #expect(merged == Decimal(string: "1234.56")!)
+
+        let grouped = try "1234567.8".convertMoneyString(
+            from: .major,
+            to: .major,
+            currency: .cny,
+            scale: 2,
+            useGrouping: true
+        )
+        #expect(grouped == "1,234,567.80")
+
+        let formatted = try "1234567.8".formattedMoney(scale: 2, useGrouping: true)
+        #expect(formatted == "1,234,567.80")
     }
 
     @Test("Percentage conversion")

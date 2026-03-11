@@ -103,6 +103,86 @@ public enum DeviceInfo {
         UIScreen.main.nativeScale
     }
 
+    /// 电池电量（0...1），不可用时返回 `nil`（如模拟器）。
+    @MainActor
+    public static var batteryLevel: Float? {
+        let value = withBatteryMonitoringEnabled { device in
+            device.batteryLevel
+        }
+        guard value >= 0 else { return nil }
+        return value
+    }
+
+    /// 电池百分比（0...100），不可用时返回 `nil`。
+    @MainActor
+    public static var batteryPercentage: Double? {
+        guard let level = batteryLevel else { return nil }
+        return Double(level * 100)
+    }
+
+    /// 电池百分比文本（如 `80%`），不可用时返回 `未知`。
+    @MainActor
+    public static var batteryPercentageText: String {
+        guard let value = batteryPercentage else { return "未知" }
+        return String(format: "%.0f%%", value)
+    }
+
+    /// 电池状态（`UIDevice.BatteryState`）。
+    @MainActor
+    public static var batteryState: UIDevice.BatteryState {
+        withBatteryMonitoringEnabled { device in
+            device.batteryState
+        }
+    }
+
+    /// 电池状态文本（`未知 / 未充电 / 充电中 / 已充满`）。
+    @MainActor
+    public static var batteryStateText: String {
+        switch batteryState {
+        case .unknown:
+            return "未知"
+        case .unplugged:
+            return "未充电"
+        case .charging:
+            return "充电中"
+        case .full:
+            return "已充满"
+        @unknown default:
+            return "未知"
+        }
+    }
+
+    /// 设备总容量（字节）。
+    public static var totalDiskSpace: Int64? {
+        fileSystemAttribute(.systemSize)
+    }
+
+    /// 设备剩余容量（字节）。
+    public static var freeDiskSpace: Int64? {
+        fileSystemAttribute(.systemFreeSize)
+    }
+
+    /// 设备已用容量（字节）。
+    public static var usedDiskSpace: Int64? {
+        guard let total = totalDiskSpace, let free = freeDiskSpace else { return nil }
+        return max(total - free, 0)
+    }
+
+    /// 设备总容量文本（如 `256 GB`），不可用时返回 `未知`。
+    public static var totalDiskSpaceText: String {
+        byteCountText(totalDiskSpace)
+    }
+
+    /// 设备剩余容量文本（如 `120 GB`），不可用时返回 `未知`。
+    public static var freeDiskSpaceText: String {
+        byteCountText(freeDiskSpace)
+    }
+
+    /// 设备已用容量文本（如 `136 GB`），不可用时返回 `未知`。
+    public static var usedDiskSpaceText: String {
+        byteCountText(usedDiskSpace)
+    }
+
     private static var utilityModelIdentifier: String {
         #if targetEnvironment(simulator)
         if let simulatorIdentifier = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"],
@@ -122,6 +202,9 @@ public enum DeviceInfo {
 
     fileprivate static let utilityDeviceMap: [String: String] = loadDeviceMap()
 
+    /// 加载设备型号映射表。
+    ///
+    /// - Returns: 机型标识到机型名称的映射字典。
     private static func loadDeviceMap() -> [String: String] {
         guard let content = loadDeviceListText() else {
             return [:]
@@ -143,6 +226,9 @@ public enum DeviceInfo {
         return result
     }
 
+    /// 从资源中读取设备型号文本。
+    ///
+    /// - Returns: 设备型号映射文本；读取失败返回 `nil`。
     private static func loadDeviceListText() -> String? {
         let resourceName = "AppleDeviceList"
         let ext = "txt"
@@ -164,6 +250,48 @@ public enum DeviceInfo {
             }
         }
         return nil
+    }
+
+    @MainActor
+    /// 临时开启电池监控后执行闭包。
+    ///
+    /// - Parameter block: 使用 `UIDevice` 的执行闭包。
+    /// - Returns: 闭包返回值。
+    private static func withBatteryMonitoringEnabled<T>(_ block: (UIDevice) -> T) -> T {
+        let device = UIDevice.current
+        let originalState = device.isBatteryMonitoringEnabled
+        if !originalState {
+            device.isBatteryMonitoringEnabled = true
+        }
+        defer {
+            if !originalState {
+                device.isBatteryMonitoringEnabled = false
+            }
+        }
+        return block(device)
+    }
+
+    /// 读取文件系统属性（容量等）。
+    ///
+    /// - Parameter key: 文件系统属性键。
+    /// - Returns: 属性值（字节），读取失败返回 `nil`。
+    private static func fileSystemAttribute(_ key: FileAttributeKey) -> Int64? {
+        guard let attrs = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory()),
+              let number = attrs[key] as? NSNumber else {
+            return nil
+        }
+        return number.int64Value
+    }
+
+    /// 将字节数格式化为可读文本。
+    ///
+    /// - Parameter bytes: 字节数。
+    /// - Returns: 可读文本；为空时返回 `未知`。
+    private static func byteCountText(_ bytes: Int64?) -> String {
+        guard let bytes else { return "未知" }
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: bytes)
     }
 }
 

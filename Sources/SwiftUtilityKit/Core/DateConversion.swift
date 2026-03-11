@@ -59,6 +59,13 @@ public enum DateConversion {
     }
 
     /// 将字符串解析为 `Date`。
+    ///
+    /// - Parameters:
+    ///   - text: 输入日期字符串。
+    ///   - format: 输入格式。
+    ///   - context: 日期上下文（语言/时区/日历）。
+    /// - Returns: 解析后的 `Date`。
+    /// - Throws: `ConversionError.invalidDate`
     public static func parse(
         _ text: String,
         format: String,
@@ -77,6 +84,12 @@ public enum DateConversion {
     }
 
     /// 将 `Date` 格式化为字符串。
+    ///
+    /// - Parameters:
+    ///   - date: 输入日期。
+    ///   - format: 输出格式。
+    ///   - context: 日期上下文（语言/时区/日历）。
+    /// - Returns: 格式化后的日期字符串。
     public static func format(
         _ date: Date,
         format: String,
@@ -90,6 +103,14 @@ public enum DateConversion {
     }
 
     /// 比较两个日期字符串。
+    ///
+    /// - Parameters:
+    ///   - lhs: 左侧日期字符串。
+    ///   - rhs: 右侧日期字符串。
+    ///   - format: 输入格式。
+    ///   - context: 日期上下文（语言/时区/日历）。
+    /// - Returns: 比较结果。
+    /// - Throws: `ConversionError.invalidDate`
     public static func compare(
         _ lhs: String,
         _ rhs: String,
@@ -102,6 +123,15 @@ public enum DateConversion {
     }
 
     /// 计算两个日期字符串的差值。
+    ///
+    /// - Parameters:
+    ///   - lhs: 左侧日期字符串。
+    ///   - rhs: 右侧日期字符串。
+    ///   - unit: 差值单位。
+    ///   - format: 输入格式。
+    ///   - context: 日期上下文（语言/时区/日历）。
+    /// - Returns: `rhs - lhs` 的差值。
+    /// - Throws: `ConversionError.invalidDate`
     public static func difference(
         _ lhs: String,
         _ rhs: String,
@@ -117,23 +147,48 @@ public enum DateConversion {
     }
 
     /// 时间戳转 `Date`。
+    ///
+    /// - Parameters:
+    ///   - timestamp: 时间戳值。
+    ///   - unit: 时间戳单位（秒或毫秒）。
+    /// - Returns: 转换后的日期。
     public static func date(from timestamp: Decimal, unit: TimestampUnit = .second) -> Date {
         let seconds = timestamp / unit.factor
         return Date(timeIntervalSince1970: NSDecimalNumber(decimal: seconds).doubleValue)
     }
 
     /// `Date` 转时间戳。
+    ///
+    /// - Parameters:
+    ///   - date: 输入日期。
+    ///   - unit: 时间戳单位（秒或毫秒）。
+    /// - Returns: 时间戳值。
     public static func timestamp(from date: Date, unit: TimestampUnit = .second) -> Decimal {
         Decimal(date.timeIntervalSince1970) * unit.factor
     }
 
     /// 时间戳单位转换。
+    ///
+    /// - Parameters:
+    ///   - value: 原始时间戳。
+    ///   - from: 源时间戳单位。
+    ///   - to: 目标时间戳单位。
+    /// - Returns: 转换后的时间戳。
     public static func convertTimestamp(_ value: Decimal, from: TimestampUnit, to: TimestampUnit) -> Decimal {
         let seconds = value / from.factor
         return seconds * to.factor
     }
 
     /// 判断目标时间是否在“参考时间往前指定区间”内。
+    ///
+    /// - Parameters:
+    ///   - target: 目标时间。
+    ///   - value: 范围值（例如 `7`）。
+    ///   - component: 时间粒度（如 `.day`、`.month`）。
+    ///   - reference: 参考时间。
+    ///   - context: 日期上下文（语言/时区/日历）。
+    ///   - inclusive: 是否包含边界。
+    /// - Returns: 是否落在指定区间内。
     public static func isWithinPastRange(
         _ target: Date,
         value: Int,
@@ -154,6 +209,13 @@ public enum DateConversion {
     }
 
     /// 判断目标时间是否处于指定起止时间区间。
+    ///
+    /// - Parameters:
+    ///   - target: 目标时间。
+    ///   - start: 起始时间。
+    ///   - end: 结束时间。
+    ///   - inclusive: 是否包含边界。
+    /// - Returns: 是否处于指定区间内。
     public static func isInRange(_ target: Date, from start: Date, to end: Date, inclusive: Bool = true) -> Bool {
         let lower = min(start, end)
         let upper = max(start, end)
@@ -164,6 +226,13 @@ public enum DateConversion {
     }
 
     /// 判断目标时间是否符合“昨天/今天/明天/上周/下周/去年/明年”等相对标签。
+    ///
+    /// - Parameters:
+    ///   - target: 目标时间。
+    ///   - tag: 相对时间标签。
+    ///   - reference: 参考时间。
+    ///   - context: 日期上下文（语言/时区/日历）。
+    /// - Returns: 是否匹配指定相对时间标签。
     public static func isRelative(
         _ target: Date,
         as tag: RelativeDateTag,

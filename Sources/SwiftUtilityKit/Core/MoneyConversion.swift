@@ -74,6 +74,12 @@ public struct CNYParts: Equatable, Sendable {
     public let jiao: Int
     public let fen: Int
 
+    /// 初始化人民币元角分结构。
+    ///
+    /// - Parameters:
+    ///   - yuan: 元。
+    ///   - jiao: 角。
+    ///   - fen: 分。
     public init(yuan: Int, jiao: Int, fen: Int) {
         self.yuan = yuan
         self.jiao = jiao
@@ -138,12 +144,55 @@ public enum MoneyConversion {
         return amount * sign
     }
 
+    /// 金额格式化（仅用于展示，不做单位换算）。
+    ///
+    /// - Parameters:
+    ///   - amount: 原金额。
+    ///   - scale: 小数位（可选）。
+    ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 语言环境，默认中文。
+    /// - Returns: 格式化后的金额字符串。
+    public static func format(
+        _ amount: Decimal,
+        scale: Int? = nil,
+        useGrouping: Bool = false,
+        locale: Locale = Locale(identifier: "zh_CN")
+    ) -> String {
+        let formatter = NumberFormatter()
+        formatter.locale = locale
+        formatter.numberStyle = .decimal
+        formatter.usesGroupingSeparator = useGrouping
+
+        if let scale {
+            let rounded = amount.rounded(scale: scale)
+            formatter.minimumFractionDigits = max(0, scale)
+            formatter.maximumFractionDigits = max(0, scale)
+            return formatter.string(from: NSDecimalNumber(decimal: rounded))
+                ?? NSDecimalNumber(decimal: rounded).stringValue
+        }
+
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 16
+        return formatter.string(from: NSDecimalNumber(decimal: amount))
+            ?? NSDecimalNumber(decimal: amount).stringValue
+    }
+
+    /// 校验币种支持的金额单位层级。
+    ///
+    /// - Parameters:
+    ///   - unit: 目标单位层级。
+    ///   - currency: 币种。
+    /// - Throws: `ConversionError.invalidMoneyUnit`
     private static func validate(unit: MoneyUnit, for currency: CurrencyCode) throws {
         guard unit.power <= currency.fractionDigits else {
             throw ConversionError.invalidMoneyUnit(currency: currency.rawValue.uppercased(), unit: String(describing: unit))
         }
     }
 
+    /// 计算 10 的幂（Decimal）。
+    ///
+    /// - Parameter power: 幂指数。
+    /// - Returns: `10^power` 的十进制结果。
     private static func decimalPow10(_ power: Int) -> Decimal {
         if power <= 0 { return 1 }
         var result: Decimal = 1

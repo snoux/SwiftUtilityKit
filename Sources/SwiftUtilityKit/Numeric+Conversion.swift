@@ -194,6 +194,11 @@ public extension BinaryFloatingPoint {
     // MARK: - Length
 
     /// 长度单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源长度单位。
+    ///   - to: 目标长度单位。
+    /// - Returns: 转换后的结果。
     func convertLength(from: LengthUnit, to: LengthUnit) -> Decimal {
         ValueConversion.length(utilityDecimal, from: from, to: to)
     }
@@ -201,6 +206,11 @@ public extension BinaryFloatingPoint {
     // MARK: - Weight
 
     /// 重量单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源重量单位。
+    ///   - to: 目标重量单位。
+    /// - Returns: 转换后的结果。
     func convertWeight(from: WeightUnit, to: WeightUnit) -> Decimal {
         ValueConversion.weight(utilityDecimal, from: from, to: to)
     }
@@ -208,6 +218,11 @@ public extension BinaryFloatingPoint {
     // MARK: - Area
 
     /// 面积单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源面积单位。
+    ///   - to: 目标面积单位。
+    /// - Returns: 转换后的结果。
     func convertArea(from: AreaUnit, to: AreaUnit) -> Decimal {
         ValueConversion.area(utilityDecimal, from: from, to: to)
     }
@@ -215,6 +230,11 @@ public extension BinaryFloatingPoint {
     // MARK: - Volume
 
     /// 体积单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源体积单位。
+    ///   - to: 目标体积单位。
+    /// - Returns: 转换后的结果。
     func convertVolume(from: VolumeUnit, to: VolumeUnit) -> Decimal {
         ValueConversion.volume(utilityDecimal, from: from, to: to)
     }
@@ -222,16 +242,34 @@ public extension BinaryFloatingPoint {
     // MARK: - Time
 
     /// 时间单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源时间单位。
+    ///   - to: 目标时间单位。
+    /// - Returns: 转换后的结果。
     func convertTime(from: TimeUnit, to: TimeUnit) -> Decimal {
         ValueConversion.time(utilityDecimal, from: from, to: to)
     }
 
     /// 比较两个时间值大小。
+    ///
+    /// - Parameters:
+    ///   - other: 另一时间值。
+    ///   - selfUnit: 当前值时间单位。
+    ///   - otherUnit: 另一值时间单位。
+    /// - Returns: 比较结果。
     func compareTime<T: BinaryFloatingPoint>(with other: T, selfUnit: TimeUnit, otherUnit: TimeUnit) -> ComparisonResult {
         ValueConversion.compareTime(utilityDecimal, lhsUnit: selfUnit, other.utilityDecimal, rhsUnit: otherUnit)
     }
 
     /// 计算两个时间值差值。
+    ///
+    /// - Parameters:
+    ///   - other: 另一时间值。
+    ///   - selfUnit: 当前值时间单位。
+    ///   - otherUnit: 另一值时间单位。
+    ///   - resultUnit: 差值输出单位。
+    /// - Returns: `other - self` 的差值。
     func timeDifference<T: BinaryFloatingPoint>(
         to other: T,
         selfUnit: TimeUnit,
@@ -244,6 +282,11 @@ public extension BinaryFloatingPoint {
     // MARK: - Temperature
 
     /// 温度单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源温度单位。
+    ///   - to: 目标温度单位。
+    /// - Returns: 转换后的结果。
     func convertTemperature(from: TemperatureUnit, to: TemperatureUnit) -> Decimal {
         ValueConversion.temperature(utilityDecimal, from: from, to: to)
     }
@@ -251,6 +294,11 @@ public extension BinaryFloatingPoint {
     // MARK: - Speed
 
     /// 速度单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源速度单位。
+    ///   - to: 目标速度单位。
+    /// - Returns: 转换后的结果。
     func convertSpeed(from: SpeedUnit, to: SpeedUnit) -> Decimal {
         ValueConversion.speed(utilityDecimal, from: from, to: to)
     }
@@ -258,11 +306,15 @@ public extension BinaryFloatingPoint {
     // MARK: - Chinese Numerals
 
     /// 普通数字转中文大写数字。
+    ///
+    /// - Returns: 中文大写数字字符串。
     func toChineseUppercaseNumber() -> String {
         ChineseUppercaseConverter.toUppercaseNumber(utilityDecimal)
     }
 
     /// 普通数字转中文金额大写。
+    ///
+    /// - Returns: 中文金额大写字符串。
     func toChineseUppercaseCurrency() -> String {
         ChineseUppercaseConverter.toUppercaseCurrency(utilityDecimal)
     }
@@ -273,6 +325,11 @@ public extension Decimal {
     // MARK: - Length
 
     /// 长度单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源长度单位。
+    ///   - to: 目标长度单位。
+    /// - Returns: 转换后的结果。
     func convertLength(from: LengthUnit, to: LengthUnit) -> Decimal {
         ValueConversion.length(self, from: from, to: to)
     }
@@ -280,6 +337,11 @@ public extension Decimal {
     // MARK: - Weight
 
     /// 重量单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源重量单位。
+    ///   - to: 目标重量单位。
+    /// - Returns: 转换后的结果。
     func convertWeight(from: WeightUnit, to: WeightUnit) -> Decimal {
         ValueConversion.weight(self, from: from, to: to)
     }
@@ -287,6 +349,11 @@ public extension Decimal {
     // MARK: - Area
 
     /// 面积单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源面积单位。
+    ///   - to: 目标面积单位。
+    /// - Returns: 转换后的结果。
     func convertArea(from: AreaUnit, to: AreaUnit) -> Decimal {
         ValueConversion.area(self, from: from, to: to)
     }
@@ -294,6 +361,11 @@ public extension Decimal {
     // MARK: - Volume
 
     /// 体积单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源体积单位。
+    ///   - to: 目标体积单位。
+    /// - Returns: 转换后的结果。
     func convertVolume(from: VolumeUnit, to: VolumeUnit) -> Decimal {
         ValueConversion.volume(self, from: from, to: to)
     }
@@ -301,16 +373,34 @@ public extension Decimal {
     // MARK: - Time
 
     /// 时间单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源时间单位。
+    ///   - to: 目标时间单位。
+    /// - Returns: 转换后的结果。
     func convertTime(from: TimeUnit, to: TimeUnit) -> Decimal {
         ValueConversion.time(self, from: from, to: to)
     }
 
     /// 比较两个时间值大小。
+    ///
+    /// - Parameters:
+    ///   - other: 另一时间值。
+    ///   - selfUnit: 当前值时间单位。
+    ///   - otherUnit: 另一值时间单位。
+    /// - Returns: 比较结果。
     func compareTime(with other: Decimal, selfUnit: TimeUnit, otherUnit: TimeUnit) -> ComparisonResult {
         ValueConversion.compareTime(self, lhsUnit: selfUnit, other, rhsUnit: otherUnit)
     }
 
     /// 计算两个时间值差值。
+    ///
+    /// - Parameters:
+    ///   - other: 另一时间值。
+    ///   - selfUnit: 当前值时间单位。
+    ///   - otherUnit: 另一值时间单位。
+    ///   - resultUnit: 差值输出单位。
+    /// - Returns: `other - self` 的差值。
     func timeDifference(to other: Decimal, selfUnit: TimeUnit, otherUnit: TimeUnit, resultUnit: TimeUnit) -> Decimal {
         ValueConversion.timeDifference(self, lhsUnit: selfUnit, other, rhsUnit: otherUnit, resultUnit: resultUnit)
     }
@@ -318,6 +408,11 @@ public extension Decimal {
     // MARK: - Temperature
 
     /// 温度单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源温度单位。
+    ///   - to: 目标温度单位。
+    /// - Returns: 转换后的结果。
     func convertTemperature(from: TemperatureUnit, to: TemperatureUnit) -> Decimal {
         ValueConversion.temperature(self, from: from, to: to)
     }
@@ -325,6 +420,11 @@ public extension Decimal {
     // MARK: - Speed
 
     /// 速度单位互转。
+    ///
+    /// - Parameters:
+    ///   - from: 源速度单位。
+    ///   - to: 目标速度单位。
+    /// - Returns: 转换后的结果。
     func convertSpeed(from: SpeedUnit, to: SpeedUnit) -> Decimal {
         ValueConversion.speed(self, from: from, to: to)
     }
@@ -332,11 +432,15 @@ public extension Decimal {
     // MARK: - Chinese Numerals
 
     /// 普通数字转中文大写数字。
+    ///
+    /// - Returns: 中文大写数字字符串。
     func toChineseUppercaseNumber() -> String {
         ChineseUppercaseConverter.toUppercaseNumber(self)
     }
 
     /// 普通数字转中文金额大写。
+    ///
+    /// - Returns: 中文金额大写字符串。
     func toChineseUppercaseCurrency() -> String {
         ChineseUppercaseConverter.toUppercaseCurrency(self)
     }

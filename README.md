@@ -73,6 +73,7 @@ let text = try "1704067200".dateStringFromTimestamp(unit: .second, format: "yyyy
 
 ```swift
 let fen = try "12.34".convertMoney(from: .major, to: .minor, currency: .cny) // 人民币元转分 -> 1234
+let text = try "1234567.8".formattedMoney(scale: 2, useGrouping: true) // 金额千分位格式化 -> 1,234,567.80
 ```
 
 ### 2.8 百分比换算
@@ -121,6 +122,10 @@ let sys = DeviceInfo.systemVersion // 获取系统版本号
 let model = DeviceInfo.modelName // 获取设备机型名称
 let app = DeviceInfo.appVersionWithBuild // 获取当前 App 版本号 + 构建号
 let px = DeviceInfo.pixelResolutionText // 获取屏幕物理分辨率（像素）
+let battery = DeviceInfo.batteryPercentageText // 获取当前电池百分比文本
+let total = DeviceInfo.totalDiskSpaceText // 获取设备总容量文本
+let free = DeviceInfo.freeDiskSpaceText // 获取设备剩余容量文本
+let used = DeviceInfo.usedDiskSpaceText // 获取设备已用容量文本
 ```
 
 ### 2.14 坐标互转（CLLocationCoordinate2D）
@@ -347,11 +352,13 @@ let dict = c.dictionary() // 坐标转字典：["latitude":..., "longitude":...]
 - `MoneyConversion.convert(_:from:to:currency:)`
 - `MoneyConversion.splitCNY(_:)`
 - `MoneyConversion.mergeCNY(yuan:jiao:fen:)`
+- `MoneyConversion.format(_:scale:useGrouping:locale:)`
 
 ### 8.3 扩展入口
 String / BinaryInteger / BinaryFloatingPoint / Decimal：
 - `convertMoney(from:to:currency:)`
-- `convertMoneyString(from:to:currency:scale:)`
+- `convertMoneyString(from:to:currency:scale:useGrouping:)`
+- `formattedMoney(scale:useGrouping:)`
 
 Decimal：
 - `splitCNY()`
@@ -384,13 +391,20 @@ CNYParts：
 ### 10.1 ColorRGBA
 - `init(red:green:blue:alpha:)`
 - `parse(_:)`
+- `fromRGBString(_:)`
 - `fromPackedInt(_:hasAlpha:)`
 - `hexString(includeAlpha:prefixHash:)`
 - `packedInt(includeAlpha:)`
 
 ### 10.2 String / Integer 扩展
-- String：`toColorRGBA / normalizedColorHex / colorToPackedInt`
+- String：`toColorRGBA / normalizedColorHex / colorToPackedInt / toCGColor / toUIColor / toSwiftUIColor`
 - BinaryInteger：`toColorRGBA(hasAlpha:) / toColorHex(hasAlpha:prefixHash:)`
+
+### 10.2.1 颜色工厂函数（更直接）
+- `colorRGBA(_:)`：字符串直接创建 `ColorRGBA`
+- `cgColor(_:) / cgcolor(_:)`：字符串直接创建 `CGColor`
+- `uiColor(_:) / uicolor(_:)`：字符串直接创建 `UIColor`（UIKit）
+- `swiftUIColor(_:)`：字符串直接创建 `SwiftUI.Color`
 
 ### 10.3 平台桥接
 ColorRGBA：
@@ -404,6 +418,9 @@ ColorRGBA：
 
 UIColor（UIKit）：
 - `init(_ color: ColorRGBA)`
+- `init(hex:)`
+- `init(rgbString:)`
+- `init(colorString:)`
 - `toColorRGBA()`
 
 Color（SwiftUI + UIKit 桥接）：
@@ -429,6 +446,17 @@ Color（SwiftUI + UIKit 桥接）：
 - `DeviceInfo.pixelResolutionText`：物理分辨率文本（如 `1179x2556 px`）
 - `DeviceInfo.screenScale`：屏幕缩放倍数
 - `DeviceInfo.nativeScale`：原生缩放倍数
+- `DeviceInfo.batteryLevel`：电池电量（0...1，不可用时为 `nil`）
+- `DeviceInfo.batteryPercentage`：电池百分比（0...100，不可用时为 `nil`）
+- `DeviceInfo.batteryPercentageText`：电池百分比文本（如 `80%`，不可用时为 `未知`）
+- `DeviceInfo.batteryState`：电池状态（`UIDevice.BatteryState`）
+- `DeviceInfo.batteryStateText`：电池状态文本（`未知 / 未充电 / 充电中 / 已充满`）
+- `DeviceInfo.totalDiskSpace`：设备总容量（字节）
+- `DeviceInfo.freeDiskSpace`：设备剩余容量（字节）
+- `DeviceInfo.usedDiskSpace`：设备已用容量（字节）
+- `DeviceInfo.totalDiskSpaceText`：设备总容量文本（如 `256 GB`）
+- `DeviceInfo.freeDiskSpaceText`：设备剩余容量文本（如 `120 GB`）
+- `DeviceInfo.usedDiskSpaceText`：设备已用容量文本（如 `136 GB`）
 
 ### 11.2 扩展 API
 - `UIDevice.utilityModelIdentifier`：设备机型标识

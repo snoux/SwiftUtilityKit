@@ -100,6 +100,10 @@ enum ChineseUppercaseConverter {
         return try parseStandard(trimmed)
     }
 
+    /// 整数部分转中文大写。
+    ///
+    /// - Parameter text: 整数字符串。
+    /// - Returns: 中文大写字符串。
     private static func integerToUppercase(_ text: String) -> String {
         let stripped = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let value = Int(stripped), value != 0 else {
@@ -142,6 +146,10 @@ enum ChineseUppercaseConverter {
         return result
     }
 
+    /// 四位节段转中文大写。
+    ///
+    /// - Parameter section: 0...9999 的节段值。
+    /// - Returns: 节段中文大写字符串。
     private static func sectionToUppercase(_ section: Int) -> String {
         var value = section
         var index = 0
@@ -170,6 +178,11 @@ enum ChineseUppercaseConverter {
         return result
     }
 
+    /// 解析普通中文数字（非金额格式）。
+    ///
+    /// - Parameter text: 中文数字字符串。
+    /// - Returns: 解析结果。
+    /// - Throws: `ConversionError.invalidChineseNumeral`
     private static func parseStandard(_ text: String) throws -> Decimal {
         var normalized = text.replacingOccurrences(of: "圆", with: "")
             .replacingOccurrences(of: "元", with: "")
@@ -205,6 +218,11 @@ enum ChineseUppercaseConverter {
         return result
     }
 
+    /// 解析中文金额格式。
+    ///
+    /// - Parameter text: 中文金额字符串。
+    /// - Returns: 解析结果。
+    /// - Throws: `ConversionError.invalidChineseNumeral`
     private static func parseCurrency(_ text: String) throws -> Decimal {
         var normalized = text.replacingOccurrences(of: "圆", with: "元")
             .replacingOccurrences(of: "整", with: "")
@@ -247,6 +265,13 @@ enum ChineseUppercaseConverter {
         return result
     }
 
+    /// 解析金额小数位（角/分）字符。
+    ///
+    /// - Parameters:
+    ///   - text: 待解析文本。
+    ///   - source: 原始输入文本（用于错误提示）。
+    /// - Returns: 小数位数字（0...9）。
+    /// - Throws: `ConversionError.invalidChineseNumeral`
     private static func parseFractionDigit(_ text: String, source: String) throws -> Int {
         let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if cleaned.isEmpty || cleaned == "零" {
@@ -260,6 +285,11 @@ enum ChineseUppercaseConverter {
         throw ConversionError.invalidChineseNumeral(source)
     }
 
+    /// 解析中文整数部分。
+    ///
+    /// - Parameter text: 中文整数文本。
+    /// - Returns: 解析后的整数。
+    /// - Throws: `ConversionError.invalidChineseNumeral`
     private static func parseChineseInteger(_ text: String) throws -> Int {
         let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
         if cleaned.isEmpty {

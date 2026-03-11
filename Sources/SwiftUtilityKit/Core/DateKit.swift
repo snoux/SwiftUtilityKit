@@ -49,6 +49,12 @@ public enum DateKit {
         /// 日历（默认中文上下文为公历 `gregorian`）。
         public let calendar: Calendar
 
+        /// 初始化日期上下文。
+        ///
+        /// - Parameters:
+        ///   - locale: 语言环境。
+        ///   - timeZone: 时区。
+        ///   - calendar: 日历。
         public init(locale: Locale, timeZone: TimeZone, calendar: Calendar) {
             var configured = calendar
             configured.timeZone = timeZone

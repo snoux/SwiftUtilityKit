@@ -103,6 +103,11 @@ public struct ColorRGBA: Equatable, Sendable {
         return (red << 16) | (green << 8) | blue
     }
 
+    /// 解析 HEX 颜色字符串。
+    ///
+    /// - Parameter text: HEX 颜色字符串。
+    /// - Returns: 解析后的颜色。
+    /// - Throws: `ConversionError.invalidColor`
     private static func parseHex(_ text: String) throws -> ColorRGBA {
         let hex = String(text.dropFirst())
         switch hex.count {
@@ -135,6 +140,11 @@ public struct ColorRGBA: Equatable, Sendable {
         }
     }
 
+    /// 解析 `rgb(...)` / `rgba(...)` 颜色字符串。
+    ///
+    /// - Parameter text: RGB 函数颜色字符串。
+    /// - Returns: 解析后的颜色。
+    /// - Throws: `ConversionError.invalidColor`
     private static func parseRGBFunction(_ text: String) throws -> ColorRGBA {
         let normalized = text.replacingOccurrences(of: " ", with: "")
         if normalized.lowercased().hasPrefix("rgba(") && normalized.hasSuffix(")") {
@@ -168,6 +178,13 @@ public struct ColorRGBA: Equatable, Sendable {
         throw ConversionError.invalidColor(text)
     }
 
+    /// 解析 2 位十六进制通道值。
+    ///
+    /// - Parameters:
+    ///   - value: 两位十六进制字符串。
+    ///   - raw: 原始输入文本（用于错误提示）。
+    /// - Returns: 解析后的通道值。
+    /// - Throws: `ConversionError.invalidColor`
     private static func parseHexPair(_ value: String, raw: String) throws -> Int {
         guard let parsed = Int(value, radix: 16) else {
             throw ConversionError.invalidColor(raw)

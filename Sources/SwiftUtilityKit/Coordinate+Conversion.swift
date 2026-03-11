@@ -83,6 +83,8 @@ public extension CLLocationCoordinate2D {
     /// - `lat` / `lng`
     /// - `lat` / `lon`
     ///
+    /// - Parameter dictionary: 坐标字典。
+    /// - Returns: 解析后的坐标。
     /// - Throws: `ConversionError.invalidCoordinate`
     static func make(from dictionary: [String: Double]) throws -> CLLocationCoordinate2D {
         let lat = dictionary["latitude"] ?? dictionary["lat"]
@@ -118,6 +120,9 @@ public extension CLLocationCoordinate2D {
     }
 
     /// 坐标转元组。
+    ///
+    /// - Parameter order: 输出字段顺序。
+    /// - Returns: 坐标元组。
     func tuple(order: CoordinateOrder = .latitudeLongitude) -> (Double, Double) {
         switch order {
         case .latitudeLongitude:
@@ -137,6 +142,12 @@ public extension CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: longitude, longitude: latitude)
     }
 
+    /// 数值格式化（用于坐标字符串输出）。
+    ///
+    /// - Parameters:
+    ///   - value: 原始数值。
+    ///   - fractionDigits: 最大小数位。
+    /// - Returns: 格式化后的字符串。
     private func format(_ value: Double, fractionDigits: Int) -> String {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
