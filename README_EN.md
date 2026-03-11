@@ -122,6 +122,14 @@ let app = DeviceInfo.appVersionWithBuild // Get app version + build
 let px = DeviceInfo.pixelResolutionText // Get physical screen resolution in pixels
 ```
 
+### 2.14 Coordinate conversion (`CLLocationCoordinate2D`)
+
+```swift
+let c = try "31.2304,121.4737".coordinate() // String -> coordinate (default latitude,longitude)
+let text = c.string(order: .longitudeLatitude, fractionDigits: 6) // Coordinate -> string (longitude,latitude)
+let dict = c.dictionary() // Coordinate -> dictionary: ["latitude":..., "longitude":...]
+```
+
 ---
 
 ## 3. DateKit (Context + Date Patterns)
@@ -242,6 +250,7 @@ Note: `relative(...)` returns `DateRelativeProxy` (not Bool). It stores `target 
 - `urlDecoded()`
 - `base64Encoded()`
 - `base64Decoded()`
+- `coordinate(separator:order:)`
 
 ---
 
@@ -450,32 +459,55 @@ let idMask = "11010519491231002X".maskedChineseIDCard() // Mask ID card as first
 
 ---
 
-## 13. Numeric Extensions (`Numeric+Conversion.swift`)
+## 13. Coordinate Conversion (`Coordinate+Conversion.swift`)
+
+Description: On CoreLocation-capable platforms, supports bidirectional conversion among coordinate/string/tuple/dictionary.
+
+### 13.1 Enum
+- `CoordinateOrder.latitudeLongitude`: `latitude,longitude`
+- `CoordinateOrder.longitudeLatitude`: `longitude,latitude`
+
+### 13.2 Coordinate APIs
+- `CLLocationCoordinate2D.parse(_:separator:order:)`
+- `CLLocationCoordinate2D.make(_:order:)`
+- `CLLocationCoordinate2D.make(from:)`
+- `isValidCoordinate`
+- `string(order:separator:fractionDigits:)`
+- `tuple(order:)`
+- `dictionary()`
+- `swappedLatLon()`
+
+### 13.3 String API
+- `coordinate(separator:order:)`
+
+---
+
+## 14. Numeric Extensions (`Numeric+Conversion.swift`)
 
 Description: Direct conversion APIs when input is already numeric.
 
-### 13.1 `BinaryInteger`
+### 14.1 `BinaryInteger`
 - Units: `convertLength / convertWeight / convertArea / convertVolume / convertTime / convertTemperature / convertSpeed`
 - Time relation: `compareTime / timeDifference`
 - Radix: `convertRadix(to:uppercase:)`
 - Chinese uppercase: `toChineseUppercaseNumber / toChineseUppercaseCurrency`
 - Color: `toColorRGBA / toColorHex`
 
-### 13.2 `BinaryFloatingPoint`
+### 14.2 `BinaryFloatingPoint`
 - Units: `convertLength / convertWeight / convertArea / convertVolume / convertTime / convertTemperature / convertSpeed`
 - Time relation: `compareTime / timeDifference`
 - Chinese uppercase: `toChineseUppercaseNumber / toChineseUppercaseCurrency`
 
-### 13.3 `Decimal`
+### 14.3 `Decimal`
 - Units: `convertLength / convertWeight / convertArea / convertVolume / convertTime / convertTemperature / convertSpeed`
 - Time relation: `compareTime / timeDifference`
 - Chinese uppercase: `toChineseUppercaseNumber / toChineseUppercaseCurrency`
 
 ---
 
-## 14. Full Unit Enum Lists (with meanings)
+## 15. Full Unit Enum Lists (with meanings)
 
-### 14.1 `LengthUnit`
+### 15.1 `LengthUnit`
 - `picometer`: picometer
 - `nanometer`: nanometer
 - `micrometer`: micrometer
@@ -499,7 +531,7 @@ Description: Direct conversion APIs when input is already numeric.
 - `hao`: hao
 - `lightYear`: light year
 
-### 14.2 `WeightUnit`
+### 15.2 `WeightUnit`
 - `microgram`: microgram
 - `milligram`: milligram
 - `gram`: gram
@@ -512,7 +544,7 @@ Description: Direct conversion APIs when input is already numeric.
 - `liang`: liang
 - `qian`: qian
 
-### 14.3 `AreaUnit`
+### 15.3 `AreaUnit`
 - `squareMillimeter`: square millimeter
 - `squareCentimeter`: square centimeter
 - `squareDecimeter`: square decimeter
@@ -524,7 +556,7 @@ Description: Direct conversion APIs when input is already numeric.
 - `squareInch`: square inch
 - `mu`: mu
 
-### 14.4 `VolumeUnit`
+### 15.4 `VolumeUnit`
 - `milliliter`: milliliter
 - `liter`: liter
 - `cubicMeter`: cubic meter
@@ -536,7 +568,7 @@ Description: Direct conversion APIs when input is already numeric.
 - `cubicCentimeter`: cubic centimeter
 - `cubicInch`: cubic inch
 
-### 14.5 `TimeUnit`
+### 15.5 `TimeUnit`
 - `nanosecond`: nanosecond
 - `microsecond`: microsecond
 - `millisecond`: millisecond
@@ -546,12 +578,12 @@ Description: Direct conversion APIs when input is already numeric.
 - `day`: day
 - `week`: week
 
-### 14.6 `TemperatureUnit`
+### 15.6 `TemperatureUnit`
 - `celsius`: Celsius
 - `fahrenheit`: Fahrenheit
 - `kelvin`: Kelvin
 
-### 14.7 `SpeedUnit`
+### 15.7 `SpeedUnit`
 - `meterPerSecond`: meter per second
 - `kilometerPerHour`: kilometer per hour
 - `milePerHour`: mile per hour
@@ -560,19 +592,19 @@ Description: Direct conversion APIs when input is already numeric.
 
 ---
 
-## 15. Date-related Enums (with meanings)
+## 16. Date-related Enums (with meanings)
 
-### 15.1 `DateConversion.TimestampUnit`
+### 16.1 `DateConversion.TimestampUnit`
 - `second`: second-level timestamp (e.g. `1704067200`)
 - `millisecond`: millisecond-level timestamp (e.g. `1704067200000`)
 
-### 15.2 `DateConversion.DateDifferenceUnit`
+### 16.2 `DateConversion.DateDifferenceUnit`
 - `second`: output difference in seconds
 - `minute`: output difference in minutes
 - `hour`: output difference in hours
 - `day`: output difference in days (24h)
 
-### 15.3 `DateConversion.RelativeDateTag`
+### 16.3 `DateConversion.RelativeDateTag`
 - `dayBeforeYesterday`: day before yesterday
 - `yesterday`: yesterday
 - `today`: today
@@ -584,7 +616,7 @@ Description: Direct conversion APIs when input is already numeric.
 
 ---
 
-## 16. Full Error Enum List (`ConversionError`)
+## 17. Full Error Enum List (`ConversionError`)
 
 - `invalidNumber`: invalid number
 - `invalidBase`: invalid base range
@@ -593,11 +625,12 @@ Description: Direct conversion APIs when input is already numeric.
 - `invalidChineseNumeral`: invalid Chinese numeral text
 - `invalidColor`: invalid color text/value
 - `invalidDate`: invalid date text
+- `invalidCoordinate`: invalid coordinate text/value
 - `invalidMoneyUnit`: money unit not supported for the selected currency
 
 ---
 
-## 17. Localization
+## 18. Localization
 
 - Localized unit names: `localizedName(locale:)`
 - Localized errors: `ConversionError.errorDescription`

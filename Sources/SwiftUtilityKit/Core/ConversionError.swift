@@ -16,6 +16,8 @@ public enum ConversionError: Error, LocalizedError {
     case invalidColor(String)
     /// 日期文本无法解析。
     case invalidDate(String)
+    /// 坐标文本无法解析或坐标超出范围。
+    case invalidCoordinate(String)
     /// 货币单位与币种不匹配。
     case invalidMoneyUnit(currency: String, unit: String)
 
@@ -38,6 +40,8 @@ public enum ConversionError: Error, LocalizedError {
             return isChinese ? "无效颜色：\(raw)" : "Invalid color: \(raw)"
         case .invalidDate(let raw):
             return isChinese ? "无效日期：\(raw)" : "Invalid date: \(raw)"
+        case .invalidCoordinate(let raw):
+            return isChinese ? "无效坐标：\(raw)" : "Invalid coordinate: \(raw)"
         case .invalidMoneyUnit(let currency, let unit):
             return isChinese
                 ? "货币单位不支持：\(currency) 不支持 \(unit)"

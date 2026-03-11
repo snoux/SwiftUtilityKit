@@ -1,6 +1,9 @@
 import Foundation
 import Testing
 @testable import SwiftUtilityKit
+#if canImport(CoreLocation)
+import CoreLocation
+#endif
 
 @Suite("SwiftUtilityKit Tests")
 struct SwiftUtilityKitTests {
@@ -278,6 +281,31 @@ struct SwiftUtilityKitTests {
         #expect(!DeviceInfo.systemVersion.isEmpty)
         #expect(!DeviceInfo.modelIdentifier.isEmpty)
         #expect(!DeviceInfo.modelName.isEmpty)
+    }
+    #endif
+
+    #if canImport(CoreLocation)
+    @Test("Coordinate conversion")
+    func testCoordinateConversion() throws {
+        let c1 = try "31.2304,121.4737".coordinate()
+        #expect(c1.latitude == 31.2304)
+        #expect(c1.longitude == 121.4737)
+
+        let c2 = try CLLocationCoordinate2D.parse("121.4737,31.2304", order: .longitudeLatitude)
+        #expect(c2.latitude == 31.2304)
+        #expect(c2.longitude == 121.4737)
+
+        let text = c1.string(order: .latitudeLongitude, fractionDigits: 4)
+        #expect(text == "31.2304,121.4737")
+
+        let tuple = c1.tuple(order: .longitudeLatitude)
+        #expect(tuple.0 == 121.4737)
+        #expect(tuple.1 == 31.2304)
+
+        let dict = c1.dictionary()
+        let c3 = try CLLocationCoordinate2D.make(from: dict)
+        #expect(c3.latitude == c1.latitude)
+        #expect(c3.longitude == c1.longitude)
     }
     #endif
 }

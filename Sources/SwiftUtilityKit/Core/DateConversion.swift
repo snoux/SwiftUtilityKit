@@ -176,9 +176,11 @@ public enum DateConversion {
         case .today:
             return calendar.isDate(target, inSameDayAs: reference)
         case .yesterday:
-            return calendar.isDateInYesterday(target)
+            guard let expected = calendar.date(byAdding: .day, value: -1, to: reference) else { return false }
+            return calendar.isDate(target, inSameDayAs: expected)
         case .tomorrow:
-            return calendar.isDateInTomorrow(target)
+            guard let expected = calendar.date(byAdding: .day, value: 1, to: reference) else { return false }
+            return calendar.isDate(target, inSameDayAs: expected)
         case .dayBeforeYesterday:
             guard let expected = calendar.date(byAdding: .day, value: -2, to: reference) else { return false }
             return calendar.isDate(target, inSameDayAs: expected)
