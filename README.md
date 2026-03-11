@@ -6,6 +6,10 @@ Swift 常用转换工具库（默认中文语境）：
 - 默认日期上下文：`zh_CN + Asia/Shanghai + Gregorian`
 - 覆盖：单位换算、日期时间、金额、百分比、颜色、字符串校验与格式化、设备与应用信息
 
+## 演示视频
+
+- 点击观看：[SwiftUtilityKit Demo Video](./docs/media/demo.mp4)
+
 ---
 
 ## 1. 安装（SPM）
