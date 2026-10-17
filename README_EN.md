@@ -4,7 +4,7 @@
 
 A Swift utility toolkit for daily conversions (Chinese-first defaults):
 - Default date context: `zh_CN + Asia/Shanghai + Gregorian`
-- Covers units, date/time, money, percentage, colors, string validation/formatting, device and app info
+- Covers units, date/time, money, percentage, colors, string validation/formatting, device diagnostics and app info, network and battery monitoring
 
 ## Demo Video
 
@@ -15,6 +15,8 @@ A Swift utility toolkit for daily conversions (Chinese-first defaults):
 ## 1. Installation (SPM)
 
 Description: Add the SDK via Swift Package Manager.
+
+Requires Swift 6.2+ and iOS / iPadOS 17, macOS 14, tvOS 17, watchOS 10, or visionOS 1 and later.
 
 ```swift
 https://github.com/snoux/SwiftUtilityKit
@@ -138,6 +140,128 @@ let c = try "31.2304,121.4737".coordinate() // String -> coordinate (default lat
 let text = c.string(order: .longitudeLatitude, fractionDigits: 6) // Coordinate -> string (longitude,latitude)
 let dict = c.dictionary() // Coordinate -> dictionary: ["latitude":..., "longitude":...]
 ```
+
+### 2.15 Network monitoring (SwiftUI)
+
+`NetworkMonitor` uses Observation's `@Observable` macro without UIKit or Combine. Own it with `@State`; reading its properties makes the view react to network changes:
+
+```swift
+import SwiftUI
+import SwiftUtilityKit
+
+@MainActor
+struct NetworkStatusView: View {
+    @State private var network = NetworkMonitor()
+
+    var body: some View {
+        VStack {
+            Text(connectionText)
+            Text(String(describing: network.connectionType))
+        }
+        .onAppear { network.start() }
+        .onDisappear { network.stop() }
+        .onChange(of: network.snapshot) { oldValue, newValue in
+            print("Network changed:", oldValue, "->", newValue)
+        }
+    }
+
+    private var connectionText: String {
+        switch network.isConnected {
+        case true: "Network path available"
+        case false: "Network path unavailable"
+        case nil: "Waiting for detection"
+        }
+    }
+}
+```
+
+| API | Description |
+|---|---|
+| `start()` / `stop()` | Start / stop; repeated calls are safe and restarting is supported |
+| `isMonitoring` | Whether monitoring is running |
+| `snapshot` | Complete state; observe with `.onChange`, identical snapshots are suppressed |
+| `status` | `.unknown` / `.satisfied` / `.unsatisfied` / `.requiresConnection` |
+| `isConnected` | `Bool?`: `nil` when unknown, `true` when satisfied, otherwise `false` |
+| `connectionType` | `.unknown` / `.none` / `.wifi` / `.cellular` / `.wiredEthernet` / `.other` / `.multiple` |
+| `interfaces` | Interface types used by the available path, including simultaneous interfaces |
+
+`start()` does not synchronously return a result. Before the first callback and after `stop()`, state is unknown and interfaces are empty. Disconnected paths report `.none` and no interfaces, even if a Wi-Fi interface still exists.
+
+`isConnected == true` only indicates an available system network path, not guaranteed internet or server access. Do not block requests based on this value; actual request results determine service reachability. The monitor sends no probe requests.
+
+The example owns monitoring at the page level. For app-wide sharing, own one instance with `@State` at the app root, inject it with `.environment(network)`, and read it with `@Environment(NetworkMonitor.self)`. Manage start / stop at the root; child views should not call `stop()`. All properties and lifecycle methods are `@MainActor`-isolated. UIKit can also own the object and observe it through Observation.
+
+Read `network.connectionType` for the current type: `.wifi`, `.cellular`, `.wiredEthernet`, `.other`, or `.multiple` (inspect `network.interfaces` for all types). Before the first callback it is `.unknown`; without an available connection it is `.none`. Starting does not synchronously produce a result. Read the property in SwiftUI or handle changes with `.onChange(of: network.connectionType)`.
+
+### 2.16 Cross-platform app information (AppInfo)
+
+Only Foundation is required, including in macOS SwiftUI projects:
+
+```swift
+let name = AppInfo.name // Localized display name, falling back to CFBundleName
+let bundleID = AppInfo.bundleIdentifier
+let version = AppInfo.version
+let build = AppInfo.build
+let fullVersion = AppInfo.versionWithBuild
+let app = AppInfo.snapshot() // AppSnapshot: Codable / Equatable / Sendable
+// Use AppInfo.snapshot(bundle: someBundle) to read another bundle.
+```
+
+Missing fields produce empty strings; combined version formatting handles a missing version or build. Existing `DeviceInfo.appVersion`, `appBuild`, and `appVersionWithBuild` remain available and forward to `AppInfo`.
+
+### 2.17 Device diagnostic snapshots
+
+On UIKit platforms that support `DeviceInfo`, including iOS, call `DeviceInfo.snapshot()` on the main actor to collect system, model, app, screen, battery, power mode, thermal, and storage information. This collection entry point is unavailable on watchOS; visionOS returns `nil` for `screen`:
+
+```swift
+@MainActor
+func exportDeviceDiagnostics() throws -> (json: String, text: String) {
+    let snapshot = DeviceInfo.snapshot()
+    return (try snapshot.jsonString(), snapshot.text)
+}
+```
+
+`DeviceSnapshot` is a `Codable / Equatable / Sendable` value that can be transferred and decoded across platforms. It does not update after capture. Export using `jsonData()` or `jsonString()`; pass `prettyPrinted: false` for compact JSON. Timestamps use ISO 8601 strings with second precision; unavailable optional fields are omitted. `text` provides a Chinese diagnostic summary for logs and feedback pages.
+
+Screen dimensions use points and `bounds × scale` pixels; the latter is not necessarily the native panel resolution and is not the current SwiftUI window size. `storage.totalBytes` / `freeBytes` / `usedBytes` describe the sandbox's file system in bytes, not the app's own disk usage. Simulator storage describes its host file system and battery values may be unavailable.
+
+### 2.18 Battery and device state monitoring (SwiftUI)
+
+```swift
+import SwiftUI
+import SwiftUtilityKit
+
+@MainActor
+struct BatteryStatusView: View {
+    @State private var battery = BatteryMonitor()
+
+    var body: some View {
+        VStack {
+            Text(battery.batteryPercentageText)
+            Text(battery.batteryStateText)
+        }
+        .onAppear { battery.start() }
+        .onDisappear { battery.stop() }
+        .onChange(of: battery.snapshot) { _, newValue in
+            print("Battery / device state changed:", newValue)
+        }
+    }
+}
+```
+
+| API | Description |
+|---|---|
+| `start()` / `stop()` | Start samples immediately; calls are idempotent; stop clears state and allows restarting |
+| `isMonitoring` / `snapshot` | Monitoring flag / complete state; identical snapshots are suppressed |
+| `batteryLevel` / `batteryPercentage` | 0...1 / 0...100, or `nil` when unavailable |
+| `batteryPercentageText` | Percentage text or `未知` (unknown) |
+| `batteryState` / `batteryStateText` | `.unknown` / `.unplugged` / `.charging` / `.full`, and Chinese display text |
+| `isLowPowerModeEnabled` | `Bool?`, `nil` before sampling and after stopping |
+| `thermalState` | `.unknown` / `.nominal` / `.fair` / `.serious` / `.critical`; thermal pressure, not Celsius |
+
+`BatteryMonitor` uses `@MainActor @Observable` and system notifications without polling. Platforms exposing UIKit's battery APIs, including iOS / iPadOS, report battery level and charging state. This implementation on macOS / watchOS / tvOS only observes low-power mode and thermal state; battery level is `nil` and charging state is `.unknown`.
+
+Multiple monitors and one-shot `DeviceInfo` reads share the battery-monitoring flag; the last user restores its original state. For app-wide sharing, own an instance at the root, inject with `.environment(battery)`, and read with `@Environment(BatteryMonitor.self)`. Manage start / stop at the root.
 
 ---
 
@@ -415,7 +539,7 @@ For `Color` (SwiftUI + UIKit bridge):
 
 ## 11. Device and App Info (`Device+Info.swift`)
 
-Description: Read system version, device model, app version, and screen resolution (available on UIKit platforms).
+Description: Read system version, device model, app version, and screen resolution on UIKit platforms except watchOS. Screen APIs are unavailable on visionOS, and battery-level APIs are unavailable on tvOS. Use `AppInfo` for cross-platform app metadata.
 
 ### 11.1 Core APIs
 - `DeviceInfo.systemName`: system name (e.g. iOS)

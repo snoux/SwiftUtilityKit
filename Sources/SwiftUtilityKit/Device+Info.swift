@@ -1,6 +1,6 @@
 import Foundation
 
-#if canImport(UIKit)
+#if canImport(UIKit) && !os(watchOS)
 import UIKit
 #if canImport(Darwin)
 import Darwin
@@ -8,7 +8,7 @@ import Darwin
 
 /// 设备与应用信息工具。
 ///
-/// 说明：仅在可导入 UIKit 的平台（如 iOS）可用。
+/// 说明：在 iOS 等 UIKit 平台可用，watchOS 除外；屏幕接口不适用于 visionOS。
 public enum DeviceInfo {
     /// 系统名称（如 `iOS`）。
     public static var systemName: String {
@@ -50,23 +50,20 @@ public enum DeviceInfo {
 
     /// 当前 App 版本号（`CFBundleShortVersionString`）。
     public static var appVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
+        AppInfo.version
     }
 
     /// 当前 App 构建号（`CFBundleVersion`）。
     public static var appBuild: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
+        AppInfo.build
     }
 
     /// 当前 App 版本号 + 构建号（如 `1.2.3(45)`）。
     public static var appVersionWithBuild: String {
-        let version = appVersion
-        let build = appBuild
-        if version.isEmpty { return build }
-        if build.isEmpty { return version }
-        return "\(version)(\(build))"
+        AppInfo.versionWithBuild
     }
 
+    #if !os(visionOS)
     /// 逻辑分辨率（point）。
     @MainActor
     public static var logicalResolution: CGSize {
@@ -102,7 +99,9 @@ public enum DeviceInfo {
     public static var nativeScale: CGFloat {
         UIScreen.main.nativeScale
     }
+    #endif
 
+    #if !os(tvOS)
     /// 电池电量（0...1），不可用时返回 `nil`（如模拟器）。
     @MainActor
     public static var batteryLevel: Float? {
@@ -151,6 +150,7 @@ public enum DeviceInfo {
             return "未知"
         }
     }
+    #endif
 
     /// 设备总容量（字节）。
     public static var totalDiskSpace: Int64? {
@@ -181,6 +181,39 @@ public enum DeviceInfo {
     /// 设备已用容量文本（如 `136 GB`），不可用时返回 `未知`。
     public static var usedDiskSpaceText: String {
         byteCountText(usedDiskSpace)
+    }
+
+    /// 一次采集设备诊断信息；返回值可导出 JSON 或可读文本。
+    ///
+    /// 屏幕像素尺寸沿用 `bounds × scale` 的语义；存储信息来自沙箱所在文件系统。
+    @MainActor
+    public static func snapshot() -> DeviceSnapshot {
+        #if os(visionOS)
+        let screenSnapshot: DeviceSnapshot.Screen? = nil
+        #else
+        let screen = UIScreen.main
+        let logical = screen.bounds.size
+        let scale = screen.scale
+        let screenSnapshot = DeviceSnapshot.Screen(
+            logicalWidth: Double(logical.width), logicalHeight: Double(logical.height),
+            pixelWidth: Double(logical.width * scale), pixelHeight: Double(logical.height * scale),
+            scale: Double(scale), nativeScale: Double(screen.nativeScale)
+        )
+        #endif
+        let attributes = try? FileManager.default.attributesOfFileSystem(forPath: NSHomeDirectory())
+        return DeviceSnapshot(
+            systemName: systemName,
+            systemVersion: systemVersion,
+            modelIdentifier: modelIdentifier,
+            modelName: modelName,
+            app: AppInfo.snapshot(),
+            screen: screenSnapshot,
+            battery: BatterySnapshot.capture(),
+            storage: DeviceSnapshot.Storage(
+                totalBytes: (attributes?[.systemSize] as? NSNumber)?.int64Value,
+                freeBytes: (attributes?[.systemFreeSize] as? NSNumber)?.int64Value
+            )
+        )
     }
 
     private static var utilityModelIdentifier: String {
@@ -252,6 +285,7 @@ public enum DeviceInfo {
         return nil
     }
 
+    #if !os(tvOS)
     @MainActor
     /// 临时开启电池监控后执行闭包。
     ///
@@ -259,17 +293,11 @@ public enum DeviceInfo {
     /// - Returns: 闭包返回值。
     private static func withBatteryMonitoringEnabled<T>(_ block: (UIDevice) -> T) -> T {
         let device = UIDevice.current
-        let originalState = device.isBatteryMonitoringEnabled
-        if !originalState {
-            device.isBatteryMonitoringEnabled = true
-        }
-        defer {
-            if !originalState {
-                device.isBatteryMonitoringEnabled = false
-            }
-        }
+        BatteryMonitoringLeasePool.shared.acquire()
+        defer { BatteryMonitoringLeasePool.shared.release() }
         return block(device)
     }
+    #endif
 
     /// 读取文件系统属性（容量等）。
     ///
@@ -332,10 +360,12 @@ public extension UIDevice {
     }
 }
 
+#if !os(visionOS)
 public extension UIScreen {
     /// 屏幕物理分辨率（pixel）。
     var utilityPixelResolution: CGSize {
         CGSize(width: bounds.width * scale, height: bounds.height * scale)
     }
 }
+#endif
 #endif

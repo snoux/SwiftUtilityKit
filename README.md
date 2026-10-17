@@ -4,7 +4,7 @@
 
 Swift 常用转换工具库（默认中文语境）：
 - 默认日期上下文：`zh_CN + Asia/Shanghai + Gregorian`
-- 覆盖：单位换算、日期时间、金额、百分比、颜色、字符串校验与格式化、设备与应用信息
+- 覆盖：单位换算、日期时间、金额、百分比、颜色、字符串校验与格式化、设备诊断与应用信息、网络和电池状态监听
 
 ## 演示视频
 
@@ -15,6 +15,8 @@ Swift 常用转换工具库（默认中文语境）：
 ## 1. 安装（SPM）
 
 说明：通过 Swift Package Manager 引入 SDK。
+
+要求 Swift 6.2+；最低系统版本为 iOS / iPadOS 17、macOS 14、tvOS 17、watchOS 10、visionOS 1。
 
 ```swift
 https://github.com/snoux/SwiftUtilityKit
@@ -139,6 +141,128 @@ let c = try "31.2304,121.4737".coordinate() // 字符串转坐标（默认纬度
 let text = c.string(order: .longitudeLatitude, fractionDigits: 6) // 坐标转字符串（经度,纬度）
 let dict = c.dictionary() // 坐标转字典：["latitude":..., "longitude":...]
 ```
+
+### 2.15 网络状态监听（SwiftUI）
+
+`NetworkMonitor` 使用 Observation 的 `@Observable` 宏，不依赖 UIKit 或 Combine。SwiftUI 用 `@State` 持有，读取属性即可响应网络变化：
+
+```swift
+import SwiftUI
+import SwiftUtilityKit
+
+@MainActor
+struct NetworkStatusView: View {
+    @State private var network = NetworkMonitor()
+
+    var body: some View {
+        VStack {
+            Text(connectionText)
+            Text(String(describing: network.connectionType))
+        }
+        .onAppear { network.start() }
+        .onDisappear { network.stop() }
+        .onChange(of: network.snapshot) { oldValue, newValue in
+            print("网络变化：", oldValue, "->", newValue)
+        }
+    }
+
+    private var connectionText: String {
+        switch network.isConnected {
+        case true: "网络路径可用"
+        case false: "网络路径不可用"
+        case nil: "等待检测"
+        }
+    }
+}
+```
+
+| API | 说明 |
+|---|---|
+| `start()` / `stop()` | 启动 / 停止；重复调用安全，停止后可重新启动 |
+| `isMonitoring` | 是否正在监听 |
+| `snapshot` | 完整状态快照，可用 `.onChange` 监听变化，相同快照不重复发布 |
+| `status` | `.unknown` / `.satisfied` / `.unsatisfied` / `.requiresConnection` |
+| `isConnected` | `Bool?`；未知为 `nil`，可用为 `true`，断开或需要建立连接为 `false` |
+| `connectionType` | `.unknown` / `.none` / `.wifi` / `.cellular` / `.wiredEthernet` / `.other` / `.multiple` |
+| `interfaces` | 可用路径使用的接口集合；多接口时可据此进一步判断 |
+
+`start()` 不会同步返回检测结果；首次回调前以及 `stop()` 后状态均为未知，接口集合为空。网络断开时 `connectionType` 为 `.none`，接口集合也为空，不把仍存在的 Wi-Fi 接口当成可用连接。
+
+`isConnected == true` 只表示系统存在可用网络路径，不保证互联网或业务服务器可访问；不要用它阻止实际请求，请求结果才是服务可达性的依据。本功能不主动发送探测请求。
+
+上面的示例按页面生命周期监听。全 App 共享时，在 App 根部用 `@State` 持有一个实例，通过 `.environment(network)` 注入，子视图用 `@Environment(NetworkMonitor.self)` 读取；由根部统一管理启停，子视图不要调用 `stop()`。所有属性和启停方法均在 `@MainActor` 上访问；UIKit 同样可持有该对象并使用 Observation 观察。
+
+读取当前网络类型使用 `network.connectionType`：`.wifi` 为 Wi-Fi，`.cellular` 为蜂窝数据，`.wiredEthernet` 为有线，`.other` 为其他，`.multiple` 表示路径可使用多个接口（具体查看 `network.interfaces`）。首次回调前是 `.unknown`，没有可用连接时是 `.none`。不要刚调用 `start()` 就假设已有结果；在 SwiftUI 中直接读取属性或用 `.onChange(of: network.connectionType)` 处理变化。
+
+### 2.16 跨平台应用信息（AppInfo）
+
+仅依赖 Foundation，macOS SwiftUI 等非 UIKit 项目也可以使用：
+
+```swift
+let name = AppInfo.name // 优先本地化显示名称，缺失时回退到 CFBundleName
+let bundleID = AppInfo.bundleIdentifier
+let version = AppInfo.version
+let build = AppInfo.build
+let fullVersion = AppInfo.versionWithBuild
+let app = AppInfo.snapshot() // AppSnapshot，支持 Codable / Equatable / Sendable
+// 也可通过 AppInfo.snapshot(bundle: someBundle) 读取指定 Bundle。
+```
+
+字段缺失时返回空字符串；组合版本号会处理版本号或构建号缺失的情况。原有 `DeviceInfo.appVersion`、`appBuild`、`appVersionWithBuild` 保留并转发到 `AppInfo`。
+
+### 2.17 设备诊断快照
+
+iOS 等支持 `DeviceInfo` 的 UIKit 平台在主 Actor 上通过 `DeviceInfo.snapshot()` 一次采集系统、机型、应用、屏幕、电池、低电量模式、温度状态和存储信息。watchOS 不提供这个采集入口；visionOS 的 `screen` 为 `nil`：
+
+```swift
+@MainActor
+func exportDeviceDiagnostics() throws -> (json: String, text: String) {
+    let snapshot = DeviceInfo.snapshot()
+    return (try snapshot.jsonString(), snapshot.text)
+}
+```
+
+`DeviceSnapshot` 是可跨平台传递和解码的 `Codable / Equatable / Sendable` 值类型，采集后不会自动变化。通过 `jsonData()` 或 `jsonString()` 导出，传入 `prettyPrinted: false` 可关闭缩进；时间使用 ISO 8601 字符串（秒精度），缺失的可选值不输出。`text` 是适合日志和反馈页的中文文本。
+
+`screen` 的逻辑尺寸单位为 point，像素尺寸沿用 `bounds × scale`，不等同于所有机型的面板原生分辨率，也不表示当前 SwiftUI 窗口大小。`storage.totalBytes` / `freeBytes` / `usedBytes` 单位为字节，描述沙箱所在文件系统，不是 App 自身占用空间。模拟器上的容量对应模拟器所在文件系统，电量可能未知。
+
+### 2.18 电池与设备状态监听（SwiftUI）
+
+```swift
+import SwiftUI
+import SwiftUtilityKit
+
+@MainActor
+struct BatteryStatusView: View {
+    @State private var battery = BatteryMonitor()
+
+    var body: some View {
+        VStack {
+            Text(battery.batteryPercentageText)
+            Text(battery.batteryStateText)
+        }
+        .onAppear { battery.start() }
+        .onDisappear { battery.stop() }
+        .onChange(of: battery.snapshot) { _, newValue in
+            print("电池 / 设备状态变化：", newValue)
+        }
+    }
+}
+```
+
+| API | 说明 |
+|---|---|
+| `start()` / `stop()` | 启动时立即采样；重复调用安全，停止后清除快照，可再次启动 |
+| `isMonitoring` / `snapshot` | 监听状态 / 完整快照，相同快照不重复发布 |
+| `batteryLevel` / `batteryPercentage` | 0...1 / 0...100；不可用为 `nil` |
+| `batteryPercentageText` | 百分比文本，不可用为“未知” |
+| `batteryState` / `batteryStateText` | `.unknown` / `.unplugged` / `.charging` / `.full` 及对应中文文本 |
+| `isLowPowerModeEnabled` | `Bool?`，尚未采样或停止后为 `nil` |
+| `thermalState` | `.unknown` / `.nominal` / `.fair` / `.serious` / `.critical`，系统温度压力等级，不是摄氏度 |
+
+`BatteryMonitor` 使用 `@MainActor @Observable`，基于系统通知更新，不轮询。iOS / iPadOS 等提供 UIKit 电池接口的平台读取电量和充电状态；本实现的 macOS / watchOS / tvOS 端仅监听低电量模式和温度状态，电量为 `nil`，充电状态为 `.unknown`。
+
+库内多个监听实例和 `DeviceInfo` 的一次性读取共享电池监控开关，最后一个使用者结束时恢复原有开关状态。全 App 共享时可在根部持有并用 `.environment(battery)` 注入，子视图通过 `@Environment(BatteryMonitor.self)` 读取，由根部统一启停。
 
 ---
 
@@ -434,7 +558,7 @@ Color（SwiftUI + UIKit 桥接）：
 
 ## 11. 设备与应用信息（Device+Info.swift）
 
-说明：用于获取系统版本、设备机型、App 版本和屏幕分辨率等信息（UIKit 平台可用）。
+说明：用于获取系统版本、设备机型、App 版本和屏幕分辨率等信息（UIKit 平台，watchOS 除外）。visionOS 不提供屏幕接口，tvOS 不提供电池电量接口；跨平台应用信息使用 `AppInfo`。
 
 ### 11.1 核心 API
 - `DeviceInfo.systemName`：系统名称（如 iOS）
