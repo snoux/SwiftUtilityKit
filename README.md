@@ -127,8 +127,12 @@ let sameDay = d.isSameDay(as: Date()) // 是否同一天
 let sys = DeviceInfo.systemVersion // 获取系统版本号
 let model = DeviceInfo.modelName // 获取设备机型名称
 let app = DeviceInfo.appVersionWithBuild // 获取当前 App 版本号 + 构建号
+#if canImport(UIKit) && !os(visionOS)
 let px = DeviceInfo.pixelResolutionText // 获取屏幕物理分辨率（像素）
+#endif
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 let battery = DeviceInfo.batteryPercentageText // 获取当前电池百分比文本
+#endif
 let total = DeviceInfo.totalDiskSpaceText // 获取设备总容量文本
 let free = DeviceInfo.freeDiskSpaceText // 获取设备剩余容量文本
 let used = DeviceInfo.usedDiskSpaceText // 获取设备已用容量文本
@@ -212,7 +216,7 @@ let app = AppInfo.snapshot() // AppSnapshot，支持 Codable / Equatable / Senda
 
 ### 2.17 设备诊断快照
 
-iOS 等支持 `DeviceInfo` 的 UIKit 平台在主 Actor 上通过 `DeviceInfo.snapshot()` 一次采集系统、机型、应用、屏幕、电池、低电量模式、温度状态和存储信息。watchOS 不提供这个采集入口；visionOS 的 `screen` 为 `nil`：
+iOS 等 UIKit 平台及原生 macOS 在主 Actor 上通过 `DeviceInfo.snapshot()` 一次采集系统、机型、应用、屏幕、电池、低电量模式、温度状态和存储信息。watchOS 不提供这个采集入口；macOS / visionOS 的 `screen` 为 `nil`。macOS 电量为 `nil`、充电状态为 `.unknown`，仍采集低电量模式和温度状态：
 
 ```swift
 @MainActor
@@ -558,9 +562,12 @@ Color（SwiftUI + UIKit 桥接）：
 
 ## 11. 设备与应用信息（Device+Info.swift）
 
-说明：用于获取系统版本、设备机型、App 版本和屏幕分辨率等信息（UIKit 平台，watchOS 除外）。visionOS 不提供屏幕接口，tvOS 不提供电池电量接口；跨平台应用信息使用 `AppInfo`。
+说明：原生 macOS 14+ 和 UIKit 平台（watchOS 除外）支持系统版本、设备机型、App 版本、存储容量及诊断快照。屏幕接口仅用于 UIKit 平台（visionOS 除外），电池电量接口仅用于 UIKit 平台（tvOS 除外）；跨平台应用信息也可使用 `AppInfo`。
 
 ### 11.1 核心 API
+
+以下屏幕、电池相关属性不在原生 macOS 上提供；其余属性可共用。
+
 - `DeviceInfo.systemName`：系统名称（如 iOS）
 - `DeviceInfo.systemVersion`：系统版本号
 - `DeviceInfo.modelIdentifier`：设备机型标识（如 `iPhone16,2`）
@@ -591,10 +598,61 @@ Color（SwiftUI + UIKit 桥接）：
 - `UIDevice.utilityModelName`：设备机型名称
 - `UIScreen.utilityPixelResolution`：屏幕像素分辨率
 
-### 11.3 机型映射维护
+### 11.3 读取当前设备机型
+
+```swift
+import SwiftUtilityKit
+
+let identifier = DeviceInfo.modelIdentifier // iPhone Duo 上为 "iPhone19,4"
+let name = DeviceInfo.modelName             // iPhone Duo 上为 "iPhone Duo"
+```
+
+也可以通过 `UIDevice` 扩展读取，结果与 `DeviceInfo` 一致：
+
+```swift
+import UIKit
+import SwiftUtilityKit
+
+@MainActor
+func printDeviceModel() {
+    print(UIDevice.current.utilityModelIdentifier)
+    print(UIDevice.current.utilityModelName)
+}
+```
+
+- `modelIdentifier` 是硬件标识，数字不等于商品名称中的代数，例如 `iPhone18,1` 对应 `iPhone 17 Pro`。
+- 当前 iPhone 映射包含 `iPhone18,1`～`iPhone18,5`，分别对应 iPhone 17 Pro、iPhone 17 Pro Max、iPhone 17、iPhone Air、iPhone 17e；资源还收录了 iPad 和 iPod。
+- 已补充 iPhone 18 Pro（`iPhone19,2`）、iPhone 18 Pro Max（`iPhone19,3` / `iPhone19,7`）和 iPhone Duo（`iPhone19,4`）；两种 Pro Max 标识返回同一商品名称。
+- 模拟器优先读取 `SIMULATOR_MODEL_IDENTIFIER`，名称带有 `Simulator (...)` 前缀，例如 `Simulator (iPhone Duo)`。
+- 未收录的真机会直接返回原始标识；模拟器则返回 `Simulator (原始标识)`，便于后续补充映射。
+- 机型读取适用于原生 macOS 和可导入 UIKit 的平台（watchOS 除外）。
+
+### 11.4 macOS 读取机型
+
+原生 macOS 无需导入 UIKit，调用方式与 iOS 一致：
+
+```swift
+import SwiftUtilityKit
+
+let system = DeviceInfo.systemName         // "macOS"
+let identifier = DeviceInfo.modelIdentifier // 例如 "Mac14,7"
+let name = DeviceInfo.modelName             // "MacBook Pro (13-inch, M2, 2022)"
+```
+
+- macOS 使用 `sysctlbyname("hw.model")` 读取硬件标识，避免将 `arm64` / `x86_64` 当作机型；读取失败时标识与名称均为空字符串。
+- 映射包含 Apple Silicon 及部分 Intel 的 MacBook Pro、MacBook Air、MacBook、iMac / iMac Pro、Mac mini、Mac Studio、Mac Pro；未收录的新机型仍返回原始标识。
+- 单一标识无法区分的年份、机箱或配置不会被推测：例如 `MacBookPro15,1` 返回 `MacBook Pro (15-inch, 2018-2019)`，Mac Pro 塔式与机架式使用相同名称。
+- `DeviceInfo.snapshot()` 也支持 macOS，返回的机型字段与上述接口一致；屏幕、电池电量的限制见第 2.17 节。
+- 资源中收录旧机型不代表降低运行系统要求，macOS 最低版本仍为 14。
+
+### 11.5 机型映射维护
+
+- 参考来源：[adamawolf 的 Apple mobile device types](https://gist.github.com/adamawolf/3048717#file-apple_mobile_device_types-txt)
+- 补充参考：[pluwen/apple-device-model-list](https://github.com/pluwen/apple-device-model-list)（当前主要收录移动设备）；Mac 映射依据 [Apple 官方机型识别入口](https://support.apple.com/en-us/102767)所链接的各系列列表整理，具体来源附在资源文件的 Mac 分区。
+- Gist 尚未收录的新机型通过 Xcode 27.2 的 CoreSimulator 设备配置核对；本次 `iPhone19` 系列依据 `profile.plist` 的 `modelIdentifier`、`representedModelIdentifiers` 与设备名称整理。iPhone Duo 商品名称也可见 [Apple 官网](https://www.apple.com/iphone-duo/)。
 - 机型映射独立维护在：`Sources/SwiftUtilityKit/Resources/AppleDeviceList.txt`
 - 文件格式：`identifier|name`（一行一条，`#` 开头为注释）
-- 未命中映射时会自动回退为原始机型标识
+- 新增机型时补充已核实的标识和名称即可，无需修改 Swift 代码；资源随包发布，运行时不联网更新
 
 ---
 

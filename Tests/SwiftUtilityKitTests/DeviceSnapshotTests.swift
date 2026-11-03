@@ -68,21 +68,28 @@ struct DeviceSnapshotTests {
         #expect(text.contains("393.0x852.0 pt"))
     }
 
-    #if canImport(UIKit) && !os(watchOS)
+    #if os(macOS) || (canImport(UIKit) && !os(watchOS))
     @MainActor
     @Test("Live collection preserves DeviceInfo compatibility")
     func liveCollection() throws {
         let snapshot = DeviceInfo.snapshot()
         #expect(snapshot.systemName == DeviceInfo.systemName)
         #expect(snapshot.modelIdentifier == DeviceInfo.modelIdentifier)
+        #expect(snapshot.modelName == DeviceInfo.modelName)
         #expect(snapshot.app == AppInfo.snapshot())
         #expect(DeviceInfo.appVersion == AppInfo.version)
         #expect(DeviceInfo.appBuild == AppInfo.build)
         #expect(DeviceInfo.appVersionWithBuild == AppInfo.versionWithBuild)
-        #if os(visionOS)
+        #if os(macOS) || os(visionOS)
         #expect(snapshot.screen == nil)
         #else
         #expect(snapshot.screen?.scale == Double(UIScreen.main.scale))
+        #endif
+        #if os(macOS)
+        #expect(snapshot.battery.level == nil)
+        #expect(snapshot.battery.state == .unknown)
+        #expect(snapshot.battery.isLowPowerModeEnabled != nil)
+        #expect(snapshot.storage.totalBytes != nil)
         #endif
         #expect(try !snapshot.jsonData().isEmpty)
     }

@@ -126,12 +126,49 @@ let sameDay = d.isSameDay(as: Date()) // Check if same calendar day
 let sys = DeviceInfo.systemVersion // Get system version
 let model = DeviceInfo.modelName // Get human-readable device model name
 let app = DeviceInfo.appVersionWithBuild // Get app version + build
+#if canImport(UIKit) && !os(visionOS)
 let px = DeviceInfo.pixelResolutionText // Get physical screen resolution in pixels
+#endif
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 let battery = DeviceInfo.batteryPercentageText // Get battery percentage text
+#endif
 let total = DeviceInfo.totalDiskSpaceText // Get total device storage text
 let free = DeviceInfo.freeDiskSpaceText // Get free device storage text
 let used = DeviceInfo.usedDiskSpaceText // Get used device storage text
 ```
+
+Read the current device's hardware identifier and product name:
+
+```swift
+import SwiftUtilityKit
+
+let identifier = DeviceInfo.modelIdentifier // "iPhone19,4" on iPhone Duo
+let name = DeviceInfo.modelName             // "iPhone Duo" on iPhone Duo
+```
+
+The equivalent UIKit extensions are also available:
+
+```swift
+import UIKit
+import SwiftUtilityKit
+
+@MainActor
+func printDeviceModel() {
+    print(UIDevice.current.utilityModelIdentifier)
+    print(UIDevice.current.utilityModelName)
+}
+```
+
+- Hardware identifier numbers do not match product generations: `iPhone18,1` means iPhone 17 Pro.
+- The iPhone mapping includes `iPhone18,1` through `iPhone18,5`: iPhone 17 Pro, iPhone 17 Pro Max, iPhone 17, iPhone Air, and iPhone 17e. The resource also includes iPad and iPod models.
+- Newer mappings include iPhone 18 Pro (`iPhone19,2`), iPhone 18 Pro Max (`iPhone19,3` / `iPhone19,7`), and iPhone Duo (`iPhone19,4`). Both Pro Max identifiers return the same product name.
+- Simulators prefer `SIMULATOR_MODEL_IDENTIFIER` and wrap the name, e.g. `Simulator (iPhone Duo)`.
+- Unknown devices return the raw identifier; simulators return `Simulator (raw identifier)`.
+- Model reading is available on native macOS and UIKit platforms except watchOS. See section 11.3 for Mac examples and mapping coverage.
+
+The bundled mapping in `Sources/SwiftUtilityKit/Resources/AppleDeviceList.txt` is based on [adamawolf's Apple mobile device types](https://gist.github.com/adamawolf/3048717#file-apple_mobile_device_types-txt). Add verified entries as `identifier|name`; no Swift changes are needed. Mapping updates ship with the package and are not downloaded at runtime.
+
+New models missing from the Gist are checked against Xcode 27.2 CoreSimulator device profiles. The `iPhone19` entries use the device names and the `modelIdentifier` / `representedModelIdentifiers` fields in `profile.plist`. Apple also lists the [iPhone Duo product name](https://www.apple.com/iphone-duo/).
 
 ### 2.14 Coordinate conversion (`CLLocationCoordinate2D`)
 
@@ -211,7 +248,7 @@ Missing fields produce empty strings; combined version formatting handles a miss
 
 ### 2.17 Device diagnostic snapshots
 
-On UIKit platforms that support `DeviceInfo`, including iOS, call `DeviceInfo.snapshot()` on the main actor to collect system, model, app, screen, battery, power mode, thermal, and storage information. This collection entry point is unavailable on watchOS; visionOS returns `nil` for `screen`:
+On native macOS and UIKit platforms that support `DeviceInfo`, including iOS, call `DeviceInfo.snapshot()` on the main actor to collect system, model, app, screen, battery, power mode, thermal, and storage information. This collection entry point is unavailable on watchOS. macOS / visionOS return `nil` for `screen`; macOS reports no battery level and `.unknown` charging state, while retaining power-mode and thermal information:
 
 ```swift
 @MainActor
@@ -539,9 +576,12 @@ For `Color` (SwiftUI + UIKit bridge):
 
 ## 11. Device and App Info (`Device+Info.swift`)
 
-Description: Read system version, device model, app version, and screen resolution on UIKit platforms except watchOS. Screen APIs are unavailable on visionOS, and battery-level APIs are unavailable on tvOS. Use `AppInfo` for cross-platform app metadata.
+Description: Native macOS 14+ and UIKit platforms except watchOS support system, model, app, storage, and diagnostic snapshot APIs. Screen properties require UIKit and are unavailable on visionOS. Battery-level properties require UIKit and are unavailable on tvOS. `AppInfo` also provides cross-platform app metadata.
 
 ### 11.1 Core APIs
+
+The screen and battery properties below are unavailable on native macOS; the other properties are shared.
+
 - `DeviceInfo.systemName`: system name (e.g. iOS)
 - `DeviceInfo.systemVersion`: system version
 - `DeviceInfo.modelIdentifier`: model identifier (e.g. `iPhone16,2`)
@@ -572,7 +612,27 @@ Description: Read system version, device model, app version, and screen resoluti
 - `UIDevice.utilityModelName`: device model display name
 - `UIScreen.utilityPixelResolution`: screen physical resolution in pixels
 
-### 11.3 Device map maintenance
+### 11.3 Read Mac models
+
+Native macOS uses the same API without importing UIKit:
+
+```swift
+import SwiftUtilityKit
+
+let system = DeviceInfo.systemName          // "macOS"
+let identifier = DeviceInfo.modelIdentifier // e.g. "Mac14,7"
+let name = DeviceInfo.modelName             // "MacBook Pro (13-inch, M2, 2022)"
+```
+
+- macOS reads `hw.model` through `sysctlbyname`, rather than returning the `arm64` / `x86_64` CPU architecture. A failed read returns an empty identifier and name.
+- The map covers Apple Silicon and selected Intel MacBook Pro, MacBook Air, MacBook, iMac / iMac Pro, Mac mini, Mac Studio, and Mac Pro models. Unknown models return their raw identifiers.
+- Shared identifiers retain year ranges or omit details that cannot be distinguished. For example, `MacBookPro15,1` returns `MacBook Pro (15-inch, 2018-2019)`; tower and rack Mac Pro variants share a name.
+- `DeviceInfo.snapshot()` also collects Mac model information. See section 2.17 for screen and battery limitations.
+- Legacy entries do not lower the minimum supported macOS version, which remains 14.
+
+### 11.4 Device map maintenance
+
+- Additional reference: [pluwen/apple-device-model-list](https://github.com/pluwen/apple-device-model-list), currently focused on mobile devices. Mac mappings use the family lists linked from [Apple's Mac identification guide](https://support.apple.com/en-us/102767); per-family sources are recorded in the resource's Mac section.
 - Device mapping file: `Sources/SwiftUtilityKit/Resources/AppleDeviceList.txt`
 - File format: `identifier|name` (one record per line, `#` for comments)
 - If no mapping is found, SDK falls back to raw model identifier

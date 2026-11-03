@@ -1,6 +1,8 @@
 # Apple device mapping list
 # Format: identifier|device name
 # Source reference: https://gist.github.com/adamawolf/3048717
+# iPhone19 mappings verified against Xcode 27.2 CoreSimulator device profiles:
+# /Library/Developer/CoreSimulator/Profiles/DeviceTypes/iPhone*.simdevicetype/Contents/Resources/profile.plist
 
 # Simulator
 i386|Simulator
@@ -79,6 +81,11 @@ iPhone18,1|iPhone 17 Pro
 iPhone18,2|iPhone 17 Pro Max
 iPhone18,3|iPhone 17
 iPhone18,4|iPhone Air
+iPhone18,5|iPhone 17e
+iPhone19,2|iPhone 18 Pro
+iPhone19,3|iPhone 18 Pro Max
+iPhone19,4|iPhone Duo
+iPhone19,7|iPhone 18 Pro Max
 
 # iPad
 iPad1,1|iPad
@@ -176,3 +183,112 @@ iPad16,3|iPad Pro 11-inch (M4)
 iPad16,4|iPad Pro 11-inch (M4)
 iPad16,5|iPad Pro 13-inch (M4)
 iPad16,6|iPad Pro 13-inch (M4)
+
+# Mac - Apple Support identification lists, checked 2026-11-03
+# https://support.apple.com/en-us/108052 (MacBook Pro)
+# https://support.apple.com/en-us/102869 (MacBook Air)
+# https://support.apple.com/en-us/103257 (MacBook)
+# https://support.apple.com/en-us/108054 (iMac / iMac Pro)
+# https://support.apple.com/en-us/102852 (Mac mini)
+# https://support.apple.com/en-us/102231 (Mac Studio)
+# https://support.apple.com/en-us/102887 (Mac Pro)
+# Shared identifiers retain a year range or omit details that cannot be distinguished.
+
+# MacBook Pro
+MacBookPro14,1|MacBook Pro (13-inch, 2017, Two Thunderbolt 3 ports)
+MacBookPro14,2|MacBook Pro (13-inch, 2017, Four Thunderbolt 3 ports)
+MacBookPro14,3|MacBook Pro (15-inch, 2017)
+MacBookPro15,1|MacBook Pro (15-inch, 2018-2019)
+MacBookPro15,2|MacBook Pro (13-inch, 2018-2019, Four Thunderbolt 3 ports)
+MacBookPro15,3|MacBook Pro (15-inch, 2019)
+MacBookPro15,4|MacBook Pro (13-inch, 2019, Two Thunderbolt 3 ports)
+MacBookPro16,1|MacBook Pro (16-inch, 2019)
+MacBookPro16,2|MacBook Pro (13-inch, 2020, Four Thunderbolt 3 ports)
+MacBookPro16,3|MacBook Pro (13-inch, 2020, Two Thunderbolt 3 ports)
+MacBookPro16,4|MacBook Pro (16-inch, 2019)
+MacBookPro17,1|MacBook Pro (13-inch, M1, 2020)
+MacBookPro18,1|MacBook Pro (16-inch, 2021)
+MacBookPro18,2|MacBook Pro (16-inch, 2021)
+MacBookPro18,3|MacBook Pro (14-inch, 2021)
+MacBookPro18,4|MacBook Pro (14-inch, 2021)
+Mac14,5|MacBook Pro (14-inch, 2023)
+Mac14,6|MacBook Pro (16-inch, 2023)
+Mac14,7|MacBook Pro (13-inch, M2, 2022)
+Mac14,9|MacBook Pro (14-inch, 2023)
+Mac14,10|MacBook Pro (16-inch, 2023)
+Mac15,3|MacBook Pro (14-inch, M3, Nov 2023)
+Mac15,6|MacBook Pro (14-inch, Nov 2023)
+Mac15,7|MacBook Pro (16-inch, Nov 2023)
+Mac15,8|MacBook Pro (14-inch, Nov 2023)
+Mac15,9|MacBook Pro (16-inch, Nov 2023)
+Mac15,10|MacBook Pro (14-inch, Nov 2023)
+Mac15,11|MacBook Pro (16-inch, Nov 2023)
+Mac16,1|MacBook Pro (14-inch, M4, 2024)
+Mac16,5|MacBook Pro (16-inch, 2024)
+Mac16,6|MacBook Pro (14-inch, 2024)
+Mac16,7|MacBook Pro (16-inch, 2024)
+Mac16,8|MacBook Pro (14-inch, 2024)
+Mac17,2|MacBook Pro (14-inch, M5, 2025)
+Mac17,6|MacBook Pro (16-inch, 2026)
+Mac17,7|MacBook Pro (14-inch, 2026)
+Mac17,8|MacBook Pro (16-inch, 2026)
+Mac17,9|MacBook Pro (14-inch, 2026)
+
+# MacBook Air
+MacBookAir8,1|MacBook Air (Retina, 13-inch, 2018)
+MacBookAir8,2|MacBook Air (Retina, 13-inch, 2019)
+MacBookAir9,1|MacBook Air (Retina, 13-inch, 2020)
+MacBookAir10,1|MacBook Air (M1, 2020)
+Mac14,2|MacBook Air (M2, 2022)
+Mac14,15|MacBook Air (15-inch, M2, 2023)
+Mac15,12|MacBook Air (13-inch, M3, 2024)
+Mac15,13|MacBook Air (15-inch, M3, 2024)
+Mac16,12|MacBook Air (13-inch, M4, 2025)
+Mac16,13|MacBook Air (15-inch, M4, 2025)
+Mac17,3|MacBook Air (13-inch, M5, 2026)
+Mac17,4|MacBook Air (15-inch, M5, 2026)
+
+# MacBook
+MacBook8,1|MacBook (Retina, 12-inch, Early 2015)
+MacBook9,1|MacBook (Retina, 12-inch, Early 2016)
+MacBook10,1|MacBook (Retina, 12-inch, 2017)
+
+# iMac / iMac Pro
+iMac18,1|iMac (21.5-inch, 2017)
+iMac18,2|iMac (Retina 4K, 21.5-inch, 2017)
+iMac18,3|iMac (Retina 5K, 27-inch, 2017)
+iMac19,1|iMac (Retina 5K, 27-inch, 2019)
+iMac19,2|iMac (Retina 4K, 21.5-inch, 2019)
+iMac20,1|iMac (Retina 5K, 27-inch, 2020)
+iMac20,2|iMac (Retina 5K, 27-inch, 2020)
+iMac21,1|iMac (24-inch, M1, 2021)
+iMac21,2|iMac (24-inch, M1, 2021)
+iMacPro1,1|iMac Pro (2017)
+Mac15,4|iMac (24-inch, 2023, Two ports)
+Mac15,5|iMac (24-inch, 2023, Four ports)
+Mac16,2|iMac (24-inch, 2024, Two ports)
+Mac16,3|iMac (24-inch, 2024, Four ports)
+
+# Mac mini
+Macmini8,1|Mac mini (2018)
+Macmini9,1|Mac mini (M1, 2020)
+Mac14,3|Mac mini (M2, 2023)
+Mac14,12|Mac mini (M2 Pro, 2023)
+Mac16,10|Mac mini (2024)
+Mac16,11|Mac mini (2024)
+Mac17,16|Mac mini (M5 Pro, 2026)
+Mac18,5|Mac mini (M6, 2026)
+
+# Mac Studio
+Mac13,1|Mac Studio (M1 Max, 2022)
+Mac13,2|Mac Studio (M1 Ultra, 2022)
+Mac14,13|Mac Studio (M2 Max, 2023)
+Mac14,14|Mac Studio (M2 Ultra, 2023)
+Mac15,14|Mac Studio (M3 Ultra, 2025)
+Mac16,9|Mac Studio (M4 Max, 2025)
+Mac17,14|Mac Studio (M5 Max, 2026)
+Mac17,15|Mac Studio (M5 Ultra, 2026)
+
+# Mac Pro (tower and rack share identifiers)
+MacPro7,1|Mac Pro (2019)
+Mac14,8|Mac Pro (2023)

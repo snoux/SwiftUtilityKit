@@ -1,14 +1,17 @@
 import Foundation
 
-#if canImport(UIKit) && !os(watchOS)
+#if os(macOS) || (canImport(UIKit) && !os(watchOS))
+#if canImport(UIKit)
 import UIKit
+#endif
 #if canImport(Darwin)
 import Darwin
 #endif
 
 /// 设备与应用信息工具。
 ///
-/// 说明：在 iOS 等 UIKit 平台可用，watchOS 除外；屏幕接口不适用于 visionOS。
+/// 支持原生 macOS 和 UIKit 平台（watchOS 除外）。
+/// 屏幕接口仅适用于支持 UIScreen 的 UIKit 平台；电池接口依赖 UIDevice。
 public enum DeviceInfo {
     /// 系统名称（如 `iOS`）。
     public static var systemName: String {
@@ -16,8 +19,8 @@ public enum DeviceInfo {
         return "iOS"
         #elseif os(tvOS)
         return "tvOS"
-        #elseif os(watchOS)
-        return "watchOS"
+        #elseif os(macOS)
+        return "macOS"
         #elseif os(visionOS)
         return "visionOS"
         #else
@@ -31,7 +34,7 @@ public enum DeviceInfo {
         return "\(v.majorVersion).\(v.minorVersion).\(v.patchVersion)"
     }
 
-    /// 设备机型标识（如 `iPhone16,2`）。
+    /// 设备机型标识（如 `iPhone19,4`、`Mac14,7`），读取失败返回空字符串。
     public static var modelIdentifier: String {
         utilityModelIdentifier
     }
@@ -41,11 +44,15 @@ public enum DeviceInfo {
     /// 当映射表未命中时返回原始机型标识。
     public static var modelName: String {
         #if targetEnvironment(simulator)
-        let model = utilityDeviceMap[modelIdentifier] ?? modelIdentifier
+        let model = resolvedModelName(for: modelIdentifier)
         return "Simulator (\(model))"
         #else
-        return utilityDeviceMap[modelIdentifier] ?? modelIdentifier
+        return resolvedModelName(for: modelIdentifier)
         #endif
+    }
+
+    static func resolvedModelName(for identifier: String) -> String {
+        utilityDeviceMap[identifier] ?? identifier
     }
 
     /// 当前 App 版本号（`CFBundleShortVersionString`）。
@@ -63,7 +70,7 @@ public enum DeviceInfo {
         AppInfo.versionWithBuild
     }
 
-    #if !os(visionOS)
+    #if canImport(UIKit) && !os(visionOS)
     /// 逻辑分辨率（point）。
     @MainActor
     public static var logicalResolution: CGSize {
@@ -101,7 +108,7 @@ public enum DeviceInfo {
     }
     #endif
 
-    #if !os(tvOS)
+    #if canImport(UIKit) && !os(tvOS)
     /// 电池电量（0...1），不可用时返回 `nil`（如模拟器）。
     @MainActor
     public static var batteryLevel: Float? {
@@ -185,10 +192,11 @@ public enum DeviceInfo {
 
     /// 一次采集设备诊断信息；返回值可导出 JSON 或可读文本。
     ///
-    /// 屏幕像素尺寸沿用 `bounds × scale` 的语义；存储信息来自沙箱所在文件系统。
+    /// 屏幕像素尺寸沿用 `bounds × scale` 的语义；macOS / visionOS 不采集屏幕。
+    /// 存储信息来自沙箱所在文件系统；macOS 电量未知，仍采集低电量模式与温度状态。
     @MainActor
     public static func snapshot() -> DeviceSnapshot {
-        #if os(visionOS)
+        #if os(macOS) || os(visionOS)
         let screenSnapshot: DeviceSnapshot.Screen? = nil
         #else
         let screen = UIScreen.main
@@ -217,6 +225,18 @@ public enum DeviceInfo {
     }
 
     private static var utilityModelIdentifier: String {
+        #if os(macOS)
+        // uname.machine reports the CPU architecture on macOS, not the Mac model.
+        var size = 0
+        guard sysctlbyname("hw.model", nil, &size, nil, 0) == 0,
+              size > 0, size <= 4096 else { return "" }
+        var bytes = [UInt8](repeating: 0, count: size)
+        let status = bytes.withUnsafeMutableBytes { buffer in
+            sysctlbyname("hw.model", buffer.baseAddress, &size, nil, 0)
+        }
+        guard status == 0, size <= bytes.count else { return "" }
+        return String(decoding: bytes.prefix(size).prefix(while: { $0 != 0 }), as: UTF8.self)
+        #else
         #if targetEnvironment(simulator)
         if let simulatorIdentifier = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"],
            !simulatorIdentifier.isEmpty {
@@ -231,6 +251,7 @@ public enum DeviceInfo {
             guard let value = element.value as? Int8, value != 0 else { return }
             partial.append(String(UnicodeScalar(UInt8(value))))
         }
+        #endif
     }
 
     fileprivate static let utilityDeviceMap: [String: String] = loadDeviceMap()
@@ -285,7 +306,7 @@ public enum DeviceInfo {
         return nil
     }
 
-    #if !os(tvOS)
+    #if canImport(UIKit) && !os(tvOS)
     @MainActor
     /// 临时开启电池监控后执行闭包。
     ///
@@ -325,6 +346,7 @@ public enum DeviceInfo {
 
 private final class DeviceInfoBundleToken {}
 
+#if canImport(UIKit)
 public extension UIDevice {
     /// 设备机型标识（如 `iPhone16,2`）。
     var utilityModelIdentifier: String {
@@ -367,5 +389,6 @@ public extension UIScreen {
         CGSize(width: bounds.width * scale, height: bounds.height * scale)
     }
 }
+#endif
 #endif
 #endif
