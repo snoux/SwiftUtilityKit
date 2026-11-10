@@ -22,28 +22,26 @@ public enum VolumeUnit: String, CaseIterable {
     case cubicCentimeter
     /// 立方英寸（in³）
     case cubicInch
+    /// 微升（μL）
+    case microliter
+    /// 立方毫米（mm³）
+    case cubicMillimeter
+    /// 立方分米（dm³）
+    case cubicDecimeter
+    /// 立方英尺（ft³）
+    case cubicFoot
+    /// 立方码（yd³）
+    case cubicYard
 }
 
 public extension VolumeUnit {
-    /// 获取单位本地化名称（中文/英文）。
+    /// 获取单位的本地化名称。
     ///
-    /// - Parameter locale: 语言环境，默认 `Locale.current`。
+    /// - Parameter locale: 传入 nil 时使用系统首选语言。
     /// - Returns: 本地化后的单位名称。
     /// - Example: `VolumeUnit.liter.localizedName()`
-    func localizedName(locale: Locale = .current) -> String {
-        let isChinese = locale.identifier.lowercased().hasPrefix("zh")
-        switch self {
-        case .milliliter: return isChinese ? "毫升" : "milliliter"
-        case .liter: return isChinese ? "升" : "liter"
-        case .cubicMeter: return isChinese ? "立方米" : "cubic meter"
-        case .teaspoon: return isChinese ? "茶匙" : "teaspoon"
-        case .tablespoon: return isChinese ? "汤匙" : "tablespoon"
-        case .cup: return isChinese ? "杯" : "cup"
-        case .pint: return isChinese ? "品脱" : "pint"
-        case .gallon: return isChinese ? "加仑" : "gallon"
-        case .cubicCentimeter: return isChinese ? "立方厘米" : "cubic centimeter"
-        case .cubicInch: return isChinese ? "立方英寸" : "cubic inch"
-        }
+    func localizedName(locale: Locale? = nil) -> String {
+        SDKLocalization(locale: locale).text("unit.volume.\(rawValue)")
     }
 }
 
@@ -58,8 +56,12 @@ extension VolumeUnit: FactorUnit {
         case .cup: return .literal("0.2365882365")
         case .pint: return .literal("0.473176473")
         case .gallon: return .literal("3.785411784")
-        case .cubicCentimeter: return .literal("0.001")
+        case .cubicCentimeter: return VolumeUnit.milliliter.factorToBase
         case .cubicInch: return .literal("0.016387064")
+        case .microliter, .cubicMillimeter: return .literal("0.000001")
+        case .cubicDecimeter: return VolumeUnit.liter.factorToBase
+        case .cubicFoot: return .literal("28.316846592")
+        case .cubicYard: return .literal("764.554857984")
         }
     }
 }

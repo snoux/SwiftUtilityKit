@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>battery.charging</key>
+	<string>Заряжается</string>
+	<key>battery.connectedNotCharging</key>
+	<string>Подключена к питанию, зарядка приостановлена</string>
+	<key>battery.full</key>
+	<string>Полностью заряжена</string>
+	<key>battery.unplugged</key>
+	<string>Не подключена к питанию</string>
+	<key>common.disabled</key>
+	<string>Выключено</string>
+	<key>common.enabled</key>
+	<string>Включено</string>
+	<key>common.unknown</key>
+	<string>Неизвестно</string>
+	<key>diagnostic.app</key>
+	<string>Приложение</string>
+	<key>diagnostic.batteryLevel</key>
+	<string>Уровень заряда</string>
+	<key>diagnostic.batteryState</key>
+	<string>Состояние зарядки</string>
+	<key>diagnostic.bundleID</key>
+	<string>Идентификатор пакета</string>
+	<key>diagnostic.capturedAt</key>
+	<string>Время сбора данных</string>
+	<key>diagnostic.freeStorage</key>
+	<string>Свободное место</string>
+	<key>diagnostic.line</key>
+	<string>%1$@: %2$@</string>
+	<key>diagnostic.logicalResolution</key>
+	<string>Логическое разрешение</string>
+	<key>diagnostic.lowPowerMode</key>
+	<string>Режим энергосбережения</string>
+	<key>diagnostic.model</key>
+	<string>Модель</string>
+	<key>diagnostic.nativeScale</key>
+	<string>Нативный масштаб</string>
+	<key>diagnostic.pixelResolution</key>
+	<string>Размеры в пикселях</string>
+	<key>diagnostic.screenScale</key>
+	<string>Масштаб экрана</string>
+	<key>diagnostic.system</key>
+	<string>Система</string>
+	<key>diagnostic.thermalState</key>
+	<string>Тепловое состояние</string>
+	<key>diagnostic.totalStorage</key>
+	<string>Общий объём</string>
+	<key>diagnostic.usedStorage</key>
+	<string>Занятое место</string>
+	<key>diagnostic.version</key>
+	<string>Версия приложения</string>
+	<key>error.inexactCNYAmount</key>
+	<string>Сумма содержит дробную часть фэня.</string>
+	<key>error.invalidBase</key>
+	<string>Недопустимое основание: %1$@. Допустимый диапазон — от 2 до 36.</string>
+	<key>error.invalidChineseNumeral</key>
+	<string>Недопустимая запись числа китайскими цифрами: %1$@</string>
+	<key>error.invalidColor</key>
+	<string>Недопустимый цвет: %1$@</string>
+	<key>error.invalidCoordinate</key>
+	<string>Недопустимая координата: %1$@</string>
+	<key>error.invalidDate</key>
+	<string>Недопустимая дата: %1$@</string>
+	<key>error.invalidMoneyUnit</key>
+	<string>Единица «%2$@» не поддерживается для валюты %1$@.</string>
+	<key>error.invalidNumber</key>
+	<string>Недопустимое число: %1$@</string>
+	<key>error.invalidRadixValue</key>
+	<string>Недопустимое значение «%1$@» для основания %2$@.</string>
+	<key>error.overflow</key>
+	<string>Числовое переполнение при преобразовании.</string>
+	<key>unit.area.acre</key>
+	<string>акр</string>
+	<key>unit.area.are</key>
+	<string>ар</string>
+	<key>unit.area.hectare</key>
+	<string>гектар</string>
+	<key>unit.area.mu</key>
+	<string>му (китайская единица площади)</string>
+	<key>unit.area.qing</key>
+	<string>цин (китайская единица площади)</string>
+	<key>unit.area.squareCentimeter</key>
+	<string>квадратный сантиметр</string>
+	<key>unit.area.squareDecimeter</key>
+	<string>квадратный дециметр</string>
+	<key>unit.area.squareFoot</key>
+	<string>квадратный фут</string>
+	<key>unit.area.squareInch</key>
+	<string>квадратный дюйм</string>
+	<key>unit.area.squareKilometer</key>
+	<string>квадратный километр</string>
+	<key>unit.area.squareMeter</key>
+	<string>квадратный метр</string>
+	<key>unit.area.squareMile</key>
+	<string>квадратная миля</string>
+	<key>unit.area.squareMillimeter</key>
+	<string>квадратный миллиметр</string>
+	<key>unit.area.squareYard</key>
+	<string>квадратный ярд</string>
+	<key>unit.length.centimeter</key>
+	<string>сантиметр</string>
+	<key>unit.length.chi</key>
+	<string>чи</string>
+	<key>unit.length.cun</key>
+	<string>цунь</string>
+	<key>unit.length.decimeter</key>
+	<string>дециметр</string>
+	<key>unit.length.fen</key>
+	<string>фэнь</string>
+	<key>unit.length.foot</key>
+	<string>фут</string>
+	<key>unit.length.furlong</key>
+	<string>фарлонг</string>
+	<key>unit.length.hao</key>
+	<string>хао</string>
+	<key>unit.length.inch</key>
+	<string>дюйм</string>
+	<key>unit.length.kilometer</key>
+	<string>километр</string>
+	<key>unit.length.li</key>
+	<string>ли (китайская единица длины)</string>
+	<key>unit.length.liSmall</key>
+	<string>ли (малая единица)</string>
+	<key>unit.length.lightYear</key>
+	<string>световой год</string>
+	<key>unit.length.meter</key>
+	<string>метр</string>
+	<key>unit.length.micrometer</key>
+	<string>микрометр</string>
+	<key>unit.length.mile</key>
+	<string>миля</string>
+	<key>unit.length.millimeter</key>
+	<string>миллиметр</string>
+	<key>unit.length.nanometer</key>
+	<string>нанометр</string>
+	<key>unit.length.nauticalMile</key>
+	<string>морская миля</string>
+	<key>unit.length.picometer</key>
+	<string>пикометр</string>
+	<key>unit.length.yard</key>
+	<string>ярд</string>
+	<key>unit.length.zhang</key>
+	<string>чжан</string>
+	<key>unit.speed.footPerSecond</key>
+	<string>фут в секунду</string>
+	<key>unit.speed.inchPerSecond</key>
+	<string>дюйм в секунду</string>
+	<key>unit.speed.kilometerPerHour</key>
+	<string>километр в час</string>
+	<key>unit.speed.kilometerPerSecond</key>
+	<string>километр в секунду</string>
+	<key>unit.speed.knot</key>
+	<string>узел</string>
+	<key>unit.speed.mach</key>
+	<string>число Маха</string>
+	<key>unit.speed.meterPerSecond</key>
+	<string>метр в секунду</string>
+	<key>unit.speed.milePerHour</key>
+	<string>миля в час</string>
+	<key>unit.speed.nauticalMilePerSecond</key>
+	<string>морская миля в секунду</string>
+	<key>unit.speed.speedOfLight</key>
+	<string>скорость света в вакууме</string>
+	<key>unit.speed.speedOfSound</key>
+	<string>скорость звука в воздухе при 20 °C</string>
+	<key>unit.temperature.celsius</key>
+	<string>градус Цельсия</string>
+	<key>unit.temperature.fahrenheit</key>
+	<string>градус Фаренгейта</string>
+	<key>unit.temperature.kelvin</key>
+	<string>кельвин</string>
+	<key>unit.time.day</key>
+	<string>день</string>
+	<key>unit.time.hour</key>
+	<string>час</string>
+	<key>unit.time.microsecond</key>
+	<string>микросекунда</string>
+	<key>unit.time.millisecond</key>
+	<string>миллисекунда</string>
+	<key>unit.time.minute</key>
+	<string>минута</string>
+	<key>unit.time.nanosecond</key>
+	<string>наносекунда</string>
+	<key>unit.time.second</key>
+	<string>секунда</string>
+	<key>unit.time.week</key>
+	<string>неделя</string>
+	<key>unit.volume.cubicCentimeter</key>
+	<string>кубический сантиметр</string>
+	<key>unit.volume.cubicDecimeter</key>
+	<string>кубический дециметр</string>
+	<key>unit.volume.cubicFoot</key>
+	<string>кубический фут</string>
+	<key>unit.volume.cubicInch</key>
+	<string>кубический дюйм</string>
+	<key>unit.volume.cubicMeter</key>
+	<string>кубический метр</string>
+	<key>unit.volume.cubicMillimeter</key>
+	<string>кубический миллиметр</string>
+	<key>unit.volume.cubicYard</key>
+	<string>кубический ярд</string>
+	<key>unit.volume.cup</key>
+	<string>американская чашка</string>
+	<key>unit.volume.gallon</key>
+	<string>американский галлон</string>
+	<key>unit.volume.liter</key>
+	<string>литр</string>
+	<key>unit.volume.microliter</key>
+	<string>микролитр</string>
+	<key>unit.volume.milliliter</key>
+	<string>миллилитр</string>
+	<key>unit.volume.pint</key>
+	<string>американская пинта</string>
+	<key>unit.volume.tablespoon</key>
+	<string>столовая ложка</string>
+	<key>unit.volume.teaspoon</key>
+	<string>чайная ложка</string>
+	<key>unit.weight.dan</key>
+	<string>дань (китайская единица массы)</string>
+	<key>unit.weight.gram</key>
+	<string>грамм</string>
+	<key>unit.weight.jin</key>
+	<string>цзинь (китайская единица массы)</string>
+	<key>unit.weight.kilogram</key>
+	<string>килограмм</string>
+	<key>unit.weight.liang</key>
+	<string>лян</string>
+	<key>unit.weight.microgram</key>
+	<string>микрограмм</string>
+	<key>unit.weight.milligram</key>
+	<string>миллиграмм</string>
+	<key>unit.weight.ounce</key>
+	<string>унция</string>
+	<key>unit.weight.pound</key>
+	<string>фунт</string>
+	<key>unit.weight.qian</key>
+	<string>цянь</string>
+	<key>unit.weight.stone</key>
+	<string>стоун</string>
+	<key>unit.weight.ton</key>
+	<string>тонна</string>
+</dict>
+</plist>

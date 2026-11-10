@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>battery.charging</key>
+	<string>Charging</string>
+	<key>battery.connectedNotCharging</key>
+	<string>Plugged in, not charging</string>
+	<key>battery.full</key>
+	<string>Fully charged</string>
+	<key>battery.unplugged</key>
+	<string>Unplugged</string>
+	<key>common.disabled</key>
+	<string>Off</string>
+	<key>common.enabled</key>
+	<string>On</string>
+	<key>common.unknown</key>
+	<string>Unknown</string>
+	<key>diagnostic.app</key>
+	<string>App</string>
+	<key>diagnostic.batteryLevel</key>
+	<string>Battery level</string>
+	<key>diagnostic.batteryState</key>
+	<string>Charging status</string>
+	<key>diagnostic.bundleID</key>
+	<string>Bundle ID</string>
+	<key>diagnostic.capturedAt</key>
+	<string>Captured at</string>
+	<key>diagnostic.freeStorage</key>
+	<string>Free storage</string>
+	<key>diagnostic.line</key>
+	<string>%1$@: %2$@</string>
+	<key>diagnostic.logicalResolution</key>
+	<string>Logical resolution</string>
+	<key>diagnostic.lowPowerMode</key>
+	<string>Low Power Mode</string>
+	<key>diagnostic.model</key>
+	<string>Model</string>
+	<key>diagnostic.nativeScale</key>
+	<string>Native scale</string>
+	<key>diagnostic.pixelResolution</key>
+	<string>Pixel dimensions</string>
+	<key>diagnostic.screenScale</key>
+	<string>Screen scale</string>
+	<key>diagnostic.system</key>
+	<string>System</string>
+	<key>diagnostic.thermalState</key>
+	<string>Thermal state</string>
+	<key>diagnostic.totalStorage</key>
+	<string>Total storage</string>
+	<key>diagnostic.usedStorage</key>
+	<string>Used storage</string>
+	<key>diagnostic.version</key>
+	<string>App version</string>
+	<key>error.inexactCNYAmount</key>
+	<string>The amount cannot be expressed as a whole number of fen.</string>
+	<key>error.invalidBase</key>
+	<string>Invalid base: %1$@. Supported range is 2...36.</string>
+	<key>error.invalidChineseNumeral</key>
+	<string>Invalid Chinese numeral: %1$@</string>
+	<key>error.invalidColor</key>
+	<string>Invalid colour: %1$@</string>
+	<key>error.invalidCoordinate</key>
+	<string>Invalid coordinate: %1$@</string>
+	<key>error.invalidDate</key>
+	<string>Invalid date: %1$@</string>
+	<key>error.invalidMoneyUnit</key>
+	<string>Unsupported money unit '%2$@' for currency '%1$@'.</string>
+	<key>error.invalidNumber</key>
+	<string>Invalid numeric value: %1$@</string>
+	<key>error.invalidRadixValue</key>
+	<string>Invalid radix value '%1$@' for base %2$@.</string>
+	<key>error.overflow</key>
+	<string>Numeric overflow during conversion.</string>
+	<key>unit.area.acre</key>
+	<string>acre</string>
+	<key>unit.area.are</key>
+	<string>are</string>
+	<key>unit.area.hectare</key>
+	<string>hectare</string>
+	<key>unit.area.mu</key>
+	<string>mu</string>
+	<key>unit.area.qing</key>
+	<string>qing (Chinese land unit)</string>
+	<key>unit.area.squareCentimeter</key>
+	<string>square centimetre</string>
+	<key>unit.area.squareDecimeter</key>
+	<string>square decimetre</string>
+	<key>unit.area.squareFoot</key>
+	<string>square foot</string>
+	<key>unit.area.squareInch</key>
+	<string>square inch</string>
+	<key>unit.area.squareKilometer</key>
+	<string>square kilometre</string>
+	<key>unit.area.squareMeter</key>
+	<string>square metre</string>
+	<key>unit.area.squareMile</key>
+	<string>square mile</string>
+	<key>unit.area.squareMillimeter</key>
+	<string>square millimetre</string>
+	<key>unit.area.squareYard</key>
+	<string>square yard</string>
+	<key>unit.length.centimeter</key>
+	<string>centimetre</string>
+	<key>unit.length.chi</key>
+	<string>chi</string>
+	<key>unit.length.cun</key>
+	<string>cun</string>
+	<key>unit.length.decimeter</key>
+	<string>decimetre</string>
+	<key>unit.length.fen</key>
+	<string>fen</string>
+	<key>unit.length.foot</key>
+	<string>foot</string>
+	<key>unit.length.furlong</key>
+	<string>furlong</string>
+	<key>unit.length.hao</key>
+	<string>hao</string>
+	<key>unit.length.inch</key>
+	<string>inch</string>
+	<key>unit.length.kilometer</key>
+	<string>kilometre</string>
+	<key>unit.length.li</key>
+	<string>li</string>
+	<key>unit.length.liSmall</key>
+	<string>li (small)</string>
+	<key>unit.length.lightYear</key>
+	<string>light year</string>
+	<key>unit.length.meter</key>
+	<string>metre</string>
+	<key>unit.length.micrometer</key>
+	<string>micrometre</string>
+	<key>unit.length.mile</key>
+	<string>mile</string>
+	<key>unit.length.millimeter</key>
+	<string>millimetre</string>
+	<key>unit.length.nanometer</key>
+	<string>nanometre</string>
+	<key>unit.length.nauticalMile</key>
+	<string>nautical mile</string>
+	<key>unit.length.picometer</key>
+	<string>picometre</string>
+	<key>unit.length.yard</key>
+	<string>yard</string>
+	<key>unit.length.zhang</key>
+	<string>zhang</string>
+	<key>unit.speed.footPerSecond</key>
+	<string>foot per second</string>
+	<key>unit.speed.inchPerSecond</key>
+	<string>inch per second</string>
+	<key>unit.speed.kilometerPerHour</key>
+	<string>kilometre per hour</string>
+	<key>unit.speed.kilometerPerSecond</key>
+	<string>kilometre per second</string>
+	<key>unit.speed.knot</key>
+	<string>knot</string>
+	<key>unit.speed.mach</key>
+	<string>Mach</string>
+	<key>unit.speed.meterPerSecond</key>
+	<string>metre per second</string>
+	<key>unit.speed.milePerHour</key>
+	<string>mile per hour</string>
+	<key>unit.speed.nauticalMilePerSecond</key>
+	<string>nautical mile per second</string>
+	<key>unit.speed.speedOfLight</key>
+	<string>speed of light in vacuum</string>
+	<key>unit.speed.speedOfSound</key>
+	<string>speed of sound in air at 20°C</string>
+	<key>unit.temperature.celsius</key>
+	<string>Celsius</string>
+	<key>unit.temperature.fahrenheit</key>
+	<string>Fahrenheit</string>
+	<key>unit.temperature.kelvin</key>
+	<string>Kelvin</string>
+	<key>unit.time.day</key>
+	<string>day</string>
+	<key>unit.time.hour</key>
+	<string>hour</string>
+	<key>unit.time.microsecond</key>
+	<string>microsecond</string>
+	<key>unit.time.millisecond</key>
+	<string>millisecond</string>
+	<key>unit.time.minute</key>
+	<string>minute</string>
+	<key>unit.time.nanosecond</key>
+	<string>nanosecond</string>
+	<key>unit.time.second</key>
+	<string>second</string>
+	<key>unit.time.week</key>
+	<string>week</string>
+	<key>unit.volume.cubicCentimeter</key>
+	<string>cubic centimetre</string>
+	<key>unit.volume.cubicDecimeter</key>
+	<string>cubic decimetre</string>
+	<key>unit.volume.cubicFoot</key>
+	<string>cubic foot</string>
+	<key>unit.volume.cubicInch</key>
+	<string>cubic inch</string>
+	<key>unit.volume.cubicMeter</key>
+	<string>cubic metre</string>
+	<key>unit.volume.cubicMillimeter</key>
+	<string>cubic millimetre</string>
+	<key>unit.volume.cubicYard</key>
+	<string>cubic yard</string>
+	<key>unit.volume.cup</key>
+	<string>US cup</string>
+	<key>unit.volume.gallon</key>
+	<string>US gallon</string>
+	<key>unit.volume.liter</key>
+	<string>litre</string>
+	<key>unit.volume.microliter</key>
+	<string>microlitre</string>
+	<key>unit.volume.milliliter</key>
+	<string>millilitre</string>
+	<key>unit.volume.pint</key>
+	<string>US pint</string>
+	<key>unit.volume.tablespoon</key>
+	<string>tablespoon</string>
+	<key>unit.volume.teaspoon</key>
+	<string>teaspoon</string>
+	<key>unit.weight.dan</key>
+	<string>dan (Chinese weight unit)</string>
+	<key>unit.weight.gram</key>
+	<string>gram</string>
+	<key>unit.weight.jin</key>
+	<string>jin</string>
+	<key>unit.weight.kilogram</key>
+	<string>kilogram</string>
+	<key>unit.weight.liang</key>
+	<string>liang</string>
+	<key>unit.weight.microgram</key>
+	<string>microgram</string>
+	<key>unit.weight.milligram</key>
+	<string>milligram</string>
+	<key>unit.weight.ounce</key>
+	<string>ounce</string>
+	<key>unit.weight.pound</key>
+	<string>pound</string>
+	<key>unit.weight.qian</key>
+	<string>qian</string>
+	<key>unit.weight.stone</key>
+	<string>stone</string>
+	<key>unit.weight.ton</key>
+	<string>tonne</string>
+</dict>
+</plist>

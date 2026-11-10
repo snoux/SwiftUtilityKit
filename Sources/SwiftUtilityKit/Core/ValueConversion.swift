@@ -158,4 +158,45 @@ public enum ValueConversion {
     public static func speed(_ value: Decimal, from: SpeedUnit, to: SpeedUnit) -> Decimal {
         FactorUnitConverter.convert(value, from: from, to: to)
     }
+
+    /// 使用指定介质和条件下的声速换算马赫数或声速倍数。
+    /// 声速必须为正数，单位为米每秒。输入或结果超出数值范围时返回 `nil`。
+    public static func speed(
+        _ value: Decimal,
+        from: SpeedUnit,
+        to: SpeedUnit,
+        soundSpeedInMetersPerSecond: Decimal
+    ) -> Decimal? {
+        guard value.isFinite, soundSpeedInMetersPerSecond.isFinite, soundSpeedInMetersPerSecond > 0 else {
+            return nil
+        }
+        if from == to { return value }
+
+        let sourceFactor = from == .mach || from == .speedOfSound ? soundSpeedInMetersPerSecond : from.factorToBase
+        let targetFactor = to == .mach || to == .speedOfSound ? soundSpeedInMetersPerSecond : to.factorToBase
+        if sourceFactor == targetFactor { return value }
+
+        let result = value * sourceFactor / targetFactor
+        return result.isFinite ? result : nil
+    }
+
+    // MARK: - BMI
+
+    /// 计算 BMI（kg/m²），默认体重为千克、身高为米。
+    /// 身高和体重必须为正数，输入或结果超出数值范围时返回 `nil`。
+    public static func bmi(
+        weight: Decimal,
+        weightUnit: WeightUnit = .kilogram,
+        height: Decimal,
+        heightUnit: LengthUnit = .meter
+    ) -> Decimal? {
+        guard weight.isFinite, weight > 0, height.isFinite, height > 0 else { return nil }
+
+        let kilograms = Self.weight(weight, from: weightUnit, to: .kilogram)
+        let meters = length(height, from: heightUnit, to: .meter)
+        guard kilograms.isFinite, kilograms > 0, meters.isFinite, meters > 0 else { return nil }
+
+        let result = kilograms / meters / meters
+        return result.isFinite && result > 0 ? result : nil
+    }
 }

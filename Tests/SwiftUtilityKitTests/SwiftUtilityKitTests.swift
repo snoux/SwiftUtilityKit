@@ -215,17 +215,47 @@ struct SwiftUtilityKitTests {
         let merged = CNYParts(yuan: 1234, jiao: 5, fen: 6).toDecimalYuan()
         #expect(merged == Decimal(string: "1234.56")!)
 
+        let us = Locale(identifier: "en_US")
         let grouped = try "1234567.8".convertMoneyString(
             from: .major,
             to: .major,
             currency: .cny,
             scale: 2,
-            useGrouping: true
+            useGrouping: true,
+            locale: us
         )
         #expect(grouped == "1,234,567.80")
 
-        let formatted = try "1234567.8".formattedMoney(scale: 2, useGrouping: true)
+        let formatted = try "1234567.8".formattedMoney(scale: 2, useGrouping: true, locale: us)
         #expect(formatted == "1,234,567.80")
+        let french = try "1234.5".formattedMoney(scale: 2, useGrouping: false, locale: Locale(identifier: "fr_FR"))
+        #expect(french == "1234,50")
+    }
+
+    @Test("CNY splitting preserves the rounding policy, sign and integer bounds")
+    func testCNYSplit() throws {
+        let amount = Decimal(string: "12.346")!
+        #expect(amount.splitCNY() == CNYParts(yuan: 12, jiao: 3, fen: 5))
+        #expect(try MoneyConversion.splitCNY(amount, rounding: .truncate) == CNYParts(yuan: 12, jiao: 3, fen: 4))
+        #expect(throws: ConversionError.self) { try amount.splitCNY(rounding: .exact) }
+
+        let negative = Decimal(string: "-0.345")!
+        let truncated = try negative.splitCNY(rounding: .truncate)
+        #expect(truncated.yuan == 0)
+        #expect(truncated.jiao == 3)
+        #expect(truncated.fen == 4)
+        #expect(truncated.isNegative)
+        #expect(truncated.toDecimalYuan() == Decimal(string: "-0.34"))
+        #expect(try negative.splitCNY(rounding: .round).toDecimalYuan() == Decimal(string: "-0.35"))
+        #expect(try Decimal(string: "-0.340")!.splitCNY(rounding: .exact) == truncated)
+        #expect(try !Decimal(string: "-0.009")!.splitCNY(rounding: .truncate).isNegative)
+        #expect(try Decimal(string: "9.995")!.splitCNY(rounding: .round).yuan == 10)
+
+        #expect(try Decimal(Int.min).splitCNY(rounding: .exact).toDecimalYuan() == Decimal(Int.min))
+        #expect(try Decimal(Int.max).splitCNY(rounding: .exact).toDecimalYuan() == Decimal(Int.max))
+        #expect(throws: ConversionError.self) {
+            try (Decimal(Int.max) + 1).splitCNY(rounding: .exact)
+        }
     }
 
     @Test("Percentage conversion")
@@ -299,10 +329,20 @@ struct SwiftUtilityKitTests {
 
     @Test("Localized names")
     func testLocalizedNames() {
-        let zh = LengthUnit.meter.localizedName(locale: Locale(identifier: "zh_CN"))
-        let en = LengthUnit.meter.localizedName(locale: Locale(identifier: "en_US"))
-        #expect(zh == "米")
-        #expect(en == "meter")
+        #expect(LengthUnit.meter.localizedName(locale: Locale(identifier: "zh")) == "米")
+        #expect(LengthUnit.meter.localizedName(locale: Locale(identifier: "zh_CN")) == "米")
+        #expect(LengthUnit.meter.localizedName(locale: Locale(identifier: "en_US")) == "meter")
+        #expect(LengthUnit.meter.localizedName(locale: Locale(identifier: "en_GB")) == "metre")
+        #expect(LengthUnit.meter.localizedName(locale: Locale(identifier: "fr_CA")) == "mètre")
+        #expect(LengthUnit.meter.localizedName(locale: Locale(identifier: "ru_RU")) == "метр")
+        #expect(LengthUnit.meter.localizedName(locale: Locale(identifier: "ja_JP")) == "meter")
+        #expect(SDKLocalization.preferredLanguage(for: ["ja-JP", "fr-FR"]) == "fr")
+
+        let error = ConversionError.invalidMoneyUnit(currency: "JPY", unit: "minor")
+        let english = error.localizedDescription(locale: Locale(identifier: "en"))
+        let chinese = error.localizedDescription(locale: Locale(identifier: "zh-Hans"))
+        #expect(english == "Unsupported money unit 'minor' for currency 'JPY'.")
+        #expect(chinese == "货币单位不支持：JPY 不支持 minor")
     }
 
     #if canImport(UIKit)

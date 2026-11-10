@@ -11,17 +11,12 @@ public enum TemperatureUnit: String, CaseIterable {
 }
 
 public extension TemperatureUnit {
-    /// 获取单位本地化名称（中文/英文）。
+    /// 获取单位的本地化名称。
     ///
-    /// - Parameter locale: 语言环境，默认 `Locale.current`。
+    /// - Parameter locale: 传入 nil 时使用系统首选语言。
     /// - Returns: 本地化后的单位名称。
     /// - Example: `TemperatureUnit.celsius.localizedName()`
-    func localizedName(locale: Locale = .current) -> String {
-        let isChinese = locale.identifier.lowercased().hasPrefix("zh")
-        switch self {
-        case .celsius: return isChinese ? "摄氏度" : "Celsius"
-        case .fahrenheit: return isChinese ? "华氏度" : "Fahrenheit"
-        case .kelvin: return isChinese ? "开尔文" : "Kelvin"
-        }
+    func localizedName(locale: Locale? = nil) -> String {
+        SDKLocalization(locale: locale).text("unit.temperature.\(rawValue)")
     }
 }

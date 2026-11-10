@@ -49,37 +49,13 @@ public enum LengthUnit: String, CaseIterable {
 }
 
 public extension LengthUnit {
-    /// 获取单位本地化名称（中文/英文）。
+    /// 获取单位的本地化名称。
     ///
-    /// - Parameter locale: 语言环境，默认 `Locale.current`。
+    /// - Parameter locale: 传入 nil 时使用系统首选语言。
     /// - Returns: 本地化后的单位名称。
     /// - Example: `LengthUnit.meter.localizedName()`
-    func localizedName(locale: Locale = .current) -> String {
-        let isChinese = locale.identifier.lowercased().hasPrefix("zh")
-        switch self {
-        case .picometer: return isChinese ? "皮米" : "picometer"
-        case .nanometer: return isChinese ? "纳米" : "nanometer"
-        case .micrometer: return isChinese ? "微米" : "micrometer"
-        case .millimeter: return isChinese ? "毫米" : "millimeter"
-        case .centimeter: return isChinese ? "厘米" : "centimeter"
-        case .decimeter: return isChinese ? "分米" : "decimeter"
-        case .meter: return isChinese ? "米" : "meter"
-        case .kilometer: return isChinese ? "千米" : "kilometer"
-        case .nauticalMile: return isChinese ? "海里" : "nautical mile"
-        case .mile: return isChinese ? "英里" : "mile"
-        case .furlong: return isChinese ? "弗隆" : "furlong"
-        case .yard: return isChinese ? "码" : "yard"
-        case .foot: return isChinese ? "英尺" : "foot"
-        case .inch: return isChinese ? "英寸" : "inch"
-        case .li: return isChinese ? "里" : "li"
-        case .zhang: return isChinese ? "丈" : "zhang"
-        case .chi: return isChinese ? "尺" : "chi"
-        case .cun: return isChinese ? "寸" : "cun"
-        case .fen: return isChinese ? "分" : "fen"
-        case .liSmall: return isChinese ? "厘" : "li (small)"
-        case .hao: return isChinese ? "毫" : "hao"
-        case .lightYear: return isChinese ? "光年" : "light year"
-        }
+    func localizedName(locale: Locale? = nil) -> String {
+        SDKLocalization(locale: locale).text("unit.length.\(rawValue)")
     }
 }
 

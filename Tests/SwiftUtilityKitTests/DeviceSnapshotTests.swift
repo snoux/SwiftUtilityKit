@@ -13,9 +13,12 @@ struct DeviceSnapshotTests {
         let data = try snapshot.jsonData()
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        #expect(try decoder.decode(DeviceSnapshot.self, from: data) == snapshot)
+        let decoded = try decoder.decode(DeviceSnapshot.self, from: data)
+        #expect(decoded == snapshot)
+        #expect(decoded.model == .iPhone15ProMax)
 
         let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(json["model"] == nil)
         #expect(json["capturedAt"] as? String == "2023-11-14T22:13:20Z")
         let storage = try #require(json["storage"] as? [String: Any])
         #expect(storage["totalBytes"] as? Int == 1_000_000)
@@ -29,8 +32,9 @@ struct DeviceSnapshotTests {
             systemName: "TestOS", systemVersion: "1.0", modelIdentifier: "Test1,1",
             modelName: "Test Device", app: AppSnapshot(infoDictionary: [:])
         )
-        #expect(snapshot.text.contains("电量：未知"))
-        #expect(snapshot.text.contains("剩余容量：未知"))
+        let text = snapshot.text(locale: Locale(identifier: "zh_CN"))
+        #expect(text.contains("电量：未知"))
+        #expect(text.contains("剩余容量：未知"))
         let json = try #require(JSONSerialization.jsonObject(with: snapshot.jsonData()) as? [String: Any])
         #expect(json["screen"] == nil)
         let battery = try #require(json["battery"] as? [String: Any])
@@ -55,11 +59,13 @@ struct DeviceSnapshotTests {
         let batteryJSON = Data(#"{"level":2,"state":"unknown","thermalState":"unknown"}"#.utf8)
         let battery = try decoder.decode(BatterySnapshot.self, from: batteryJSON)
         #expect(battery.level == nil)
+        #expect(battery.isConnectedToPower == nil)
+        #expect(battery.isCharging == nil)
     }
 
     @Test("Readable text includes app, battery, storage and screen diagnostics")
     func readableText() {
-        let text = fixture().text
+        let text = fixture().text(locale: Locale(identifier: "zh_CN"))
         #expect(text.contains("应用版本：1.2.3(45)"))
         #expect(text.contains("电量：50%"))
         #expect(text.contains("充电状态：充电中"))
@@ -76,6 +82,10 @@ struct DeviceSnapshotTests {
         #expect(snapshot.systemName == DeviceInfo.systemName)
         #expect(snapshot.modelIdentifier == DeviceInfo.modelIdentifier)
         #expect(snapshot.modelName == DeviceInfo.modelName)
+        #expect(snapshot.model == DeviceInfo.currentModel)
+        #if canImport(UIKit) && !os(watchOS)
+        #expect(UIDevice.current.utilityModel == DeviceInfo.currentModel)
+        #endif
         #expect(snapshot.app == AppInfo.snapshot())
         #expect(DeviceInfo.appVersion == AppInfo.version)
         #expect(DeviceInfo.appBuild == AppInfo.build)
@@ -86,8 +96,6 @@ struct DeviceSnapshotTests {
         #expect(snapshot.screen?.scale == Double(UIScreen.main.scale))
         #endif
         #if os(macOS)
-        #expect(snapshot.battery.level == nil)
-        #expect(snapshot.battery.state == .unknown)
         #expect(snapshot.battery.isLowPowerModeEnabled != nil)
         #expect(snapshot.storage.totalBytes != nil)
         #endif

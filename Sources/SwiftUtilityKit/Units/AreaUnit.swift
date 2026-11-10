@@ -22,28 +22,24 @@ public enum AreaUnit: String, CaseIterable {
     case squareInch
     /// 亩（市制）
     case mu
+    /// 市顷（1 顷 = 100 市亩）
+    case qing
+    /// 公亩（a）
+    case are
+    /// 平方码（yd²）
+    case squareYard
+    /// 平方英里（mi²）
+    case squareMile
 }
 
 public extension AreaUnit {
-    /// 获取单位本地化名称（中文/英文）。
+    /// 获取单位的本地化名称。
     ///
-    /// - Parameter locale: 语言环境，默认 `Locale.current`。
+    /// - Parameter locale: 传入 nil 时使用系统首选语言。
     /// - Returns: 本地化后的单位名称。
     /// - Example: `AreaUnit.squareMeter.localizedName()`
-    func localizedName(locale: Locale = .current) -> String {
-        let isChinese = locale.identifier.lowercased().hasPrefix("zh")
-        switch self {
-        case .squareMillimeter: return isChinese ? "平方毫米" : "square millimeter"
-        case .squareCentimeter: return isChinese ? "平方厘米" : "square centimeter"
-        case .squareDecimeter: return isChinese ? "平方分米" : "square decimeter"
-        case .squareMeter: return isChinese ? "平方米" : "square meter"
-        case .squareKilometer: return isChinese ? "平方千米" : "square kilometer"
-        case .hectare: return isChinese ? "公顷" : "hectare"
-        case .acre: return isChinese ? "英亩" : "acre"
-        case .squareFoot: return isChinese ? "平方英尺" : "square foot"
-        case .squareInch: return isChinese ? "平方英寸" : "square inch"
-        case .mu: return isChinese ? "亩" : "mu"
-        }
+    func localizedName(locale: Locale? = nil) -> String {
+        SDKLocalization(locale: locale).text("unit.area.\(rawValue)")
     }
 }
 
@@ -60,6 +56,10 @@ extension AreaUnit: FactorUnit {
         case .squareFoot: return .literal("0.09290304")
         case .squareInch: return .literal("0.00064516")
         case .mu: return .literal("666.6666666666666667")
+        case .qing: return AreaUnit.mu.factorToBase * 100
+        case .are: return 100
+        case .squareYard: return .literal("0.83612736")
+        case .squareMile: return .literal("2589988.110336")
         }
     }
 }

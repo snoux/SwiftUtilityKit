@@ -24,29 +24,18 @@ public enum WeightUnit: String, CaseIterable {
     case liang
     /// 钱（市制）
     case qian
+    /// 担（市制，1 担 = 100 斤）
+    case dan
 }
 
 public extension WeightUnit {
-    /// 获取单位本地化名称（中文/英文）。
+    /// 获取单位的本地化名称。
     ///
-    /// - Parameter locale: 语言环境，默认 `Locale.current`。
+    /// - Parameter locale: 传入 nil 时使用系统首选语言。
     /// - Returns: 本地化后的单位名称。
     /// - Example: `WeightUnit.kilogram.localizedName()`
-    func localizedName(locale: Locale = .current) -> String {
-        let isChinese = locale.identifier.lowercased().hasPrefix("zh")
-        switch self {
-        case .microgram: return isChinese ? "微克" : "microgram"
-        case .milligram: return isChinese ? "毫克" : "milligram"
-        case .gram: return isChinese ? "克" : "gram"
-        case .kilogram: return isChinese ? "千克" : "kilogram"
-        case .ton: return isChinese ? "吨" : "ton"
-        case .ounce: return isChinese ? "盎司" : "ounce"
-        case .pound: return isChinese ? "磅" : "pound"
-        case .stone: return isChinese ? "英石" : "stone"
-        case .jin: return isChinese ? "斤" : "jin"
-        case .liang: return isChinese ? "两" : "liang"
-        case .qian: return isChinese ? "钱" : "qian"
-        }
+    func localizedName(locale: Locale? = nil) -> String {
+        SDKLocalization(locale: locale).text("unit.weight.\(rawValue)")
     }
 }
 
@@ -64,6 +53,7 @@ extension WeightUnit: FactorUnit {
         case .jin: return .literal("0.5")
         case .liang: return .literal("0.05")
         case .qian: return .literal("0.005")
+        case .dan: return WeightUnit.jin.factorToBase * 100
         }
     }
 }

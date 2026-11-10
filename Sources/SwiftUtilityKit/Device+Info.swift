@@ -11,7 +11,7 @@ import Darwin
 /// 设备与应用信息工具。
 ///
 /// 支持原生 macOS 和 UIKit 平台（watchOS 除外）。
-/// 屏幕接口仅适用于支持 UIScreen 的 UIKit 平台；电池接口依赖 UIDevice。
+/// 屏幕接口适用于支持 UIScreen 的 UIKit 平台。电池数据来自 macOS 内置电池或 UIDevice。
 public enum DeviceInfo {
     /// 系统名称（如 `iOS`）。
     public static var systemName: String {
@@ -39,6 +39,11 @@ public enum DeviceInfo {
         utilityModelIdentifier
     }
 
+    /// 当前机型。模拟器能读取具体硬件标识时，返回所模拟的机型。
+    public static var currentModel: DeviceModel {
+        DeviceModel(identifier: modelIdentifier)
+    }
+
     /// 设备机型名称（如 `iPhone 15 Pro Max`）。
     ///
     /// 当映射表未命中时返回原始机型标识。
@@ -52,7 +57,7 @@ public enum DeviceInfo {
     }
 
     static func resolvedModelName(for identifier: String) -> String {
-        utilityDeviceMap[identifier] ?? identifier
+        DeviceModelCatalog.entries[identifier]?.name ?? identifier
     }
 
     /// 当前 App 版本号（`CFBundleShortVersionString`）。
@@ -108,15 +113,23 @@ public enum DeviceInfo {
     }
     #endif
 
-    #if canImport(UIKit) && !os(tvOS)
+    /// 一次读取电量、充电、低电量模式和温度状态。
+    @MainActor
+    public static var batterySnapshot: BatterySnapshot { BatterySnapshot.capture() }
+
+    #if os(macOS) || (canImport(UIKit) && !os(tvOS))
     /// 电池电量（0...1），不可用时返回 `nil`（如模拟器）。
     @MainActor
     public static var batteryLevel: Float? {
+        #if os(macOS)
+        return batterySnapshot.level
+        #else
         let value = withBatteryMonitoringEnabled { device in
             device.batteryLevel
         }
         guard value >= 0 else { return nil }
         return value
+        #endif
     }
 
     /// 电池百分比（0...100），不可用时返回 `nil`。
@@ -126,36 +139,30 @@ public enum DeviceInfo {
         return Double(level * 100)
     }
 
-    /// 电池百分比文本（如 `80%`），不可用时返回 `未知`。
+    /// 本地化的电池百分比文本。
     @MainActor
     public static var batteryPercentageText: String {
-        guard let value = batteryPercentage else { return "未知" }
-        return String(format: "%.0f%%", value)
+        batterySnapshot.percentageText
     }
 
-    /// 电池状态（`UIDevice.BatteryState`）。
+    #if os(macOS)
+    /// 内置电池状态。接电但未充电时，可通过 `batterySnapshot` 读取接电和充电标记。
+    @MainActor
+    public static var batteryState: BatteryState { batterySnapshot.state }
+    #else
+    /// UIKit 平台的电池状态（`UIDevice.BatteryState`）。
     @MainActor
     public static var batteryState: UIDevice.BatteryState {
         withBatteryMonitoringEnabled { device in
             device.batteryState
         }
     }
+    #endif
 
-    /// 电池状态文本（`未知 / 未充电 / 充电中 / 已充满`）。
+    /// 本地化的电池状态文本。
     @MainActor
     public static var batteryStateText: String {
-        switch batteryState {
-        case .unknown:
-            return "未知"
-        case .unplugged:
-            return "未充电"
-        case .charging:
-            return "充电中"
-        case .full:
-            return "已充满"
-        @unknown default:
-            return "未知"
-        }
+        batterySnapshot.stateText
     }
     #endif
 
@@ -193,7 +200,7 @@ public enum DeviceInfo {
     /// 一次采集设备诊断信息；返回值可导出 JSON 或可读文本。
     ///
     /// 屏幕像素尺寸沿用 `bounds × scale` 的语义；macOS / visionOS 不采集屏幕。
-    /// 存储信息来自沙箱所在文件系统；macOS 电量未知，仍采集低电量模式与温度状态。
+    /// 存储信息来自沙箱所在文件系统。无内置电池的 Mac 仍提供低电量模式和温度状态。
     @MainActor
     public static func snapshot() -> DeviceSnapshot {
         #if os(macOS) || os(visionOS)
@@ -216,7 +223,7 @@ public enum DeviceInfo {
             modelName: modelName,
             app: AppInfo.snapshot(),
             screen: screenSnapshot,
-            battery: BatterySnapshot.capture(),
+            battery: batterySnapshot,
             storage: DeviceSnapshot.Storage(
                 totalBytes: (attributes?[.systemSize] as? NSNumber)?.int64Value,
                 freeBytes: (attributes?[.systemFreeSize] as? NSNumber)?.int64Value
@@ -254,58 +261,6 @@ public enum DeviceInfo {
         #endif
     }
 
-    fileprivate static let utilityDeviceMap: [String: String] = loadDeviceMap()
-
-    /// 加载设备型号映射表。
-    ///
-    /// - Returns: 机型标识到机型名称的映射字典。
-    private static func loadDeviceMap() -> [String: String] {
-        guard let content = loadDeviceListText() else {
-            return [:]
-        }
-
-        var result: [String: String] = [:]
-        content.split(whereSeparator: \.isNewline).forEach { rawLine in
-            let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !line.isEmpty, !line.hasPrefix("#") else { return }
-
-            let parts = line.split(separator: "|", maxSplits: 1, omittingEmptySubsequences: false)
-            guard parts.count == 2 else { return }
-
-            let key = String(parts[0]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let value = String(parts[1]).trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !key.isEmpty, !value.isEmpty else { return }
-            result[key] = value
-        }
-        return result
-    }
-
-    /// 从资源中读取设备型号文本。
-    ///
-    /// - Returns: 设备型号映射文本；读取失败返回 `nil`。
-    private static func loadDeviceListText() -> String? {
-        let resourceName = "AppleDeviceList"
-        let ext = "txt"
-
-        #if SWIFT_PACKAGE
-        if let url = Bundle.module.url(forResource: resourceName, withExtension: ext) {
-            return try? String(contentsOf: url, encoding: .utf8)
-        }
-        #endif
-
-        let candidates = [
-            Bundle.main,
-            Bundle(for: DeviceInfoBundleToken.self)
-        ]
-        for bundle in candidates {
-            if let url = bundle.url(forResource: resourceName, withExtension: ext),
-               let text = try? String(contentsOf: url, encoding: .utf8) {
-                return text
-            }
-        }
-        return nil
-    }
-
     #if canImport(UIKit) && !os(tvOS)
     @MainActor
     /// 临时开启电池监控后执行闭包。
@@ -335,19 +290,22 @@ public enum DeviceInfo {
     /// 将字节数格式化为可读文本。
     ///
     /// - Parameter bytes: 字节数。
-    /// - Returns: 可读文本；为空时返回 `未知`。
+    /// - Returns: 本地化的可读文本。
     private static func byteCountText(_ bytes: Int64?) -> String {
-        guard let bytes else { return "未知" }
+        guard let bytes else { return SDKLocalization().text("common.unknown") }
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         return formatter.string(fromByteCount: bytes)
     }
 }
 
-private final class DeviceInfoBundleToken {}
-
 #if canImport(UIKit)
 public extension UIDevice {
+    /// 当前机型，可与 `DeviceModel` 枚举值直接比较。
+    var utilityModel: DeviceModel {
+        DeviceModel(identifier: utilityModelIdentifier)
+    }
+
     /// 设备机型标识（如 `iPhone16,2`）。
     var utilityModelIdentifier: String {
         #if targetEnvironment(simulator)
@@ -374,10 +332,10 @@ public extension UIDevice {
         let identifier = utilityModelIdentifier
 
         #if targetEnvironment(simulator)
-        let model = DeviceInfo.utilityDeviceMap[identifier] ?? identifier
+        let model = DeviceInfo.resolvedModelName(for: identifier)
         return "Simulator (\(model))"
         #else
-        return DeviceInfo.utilityDeviceMap[identifier] ?? identifier
+        return DeviceInfo.resolvedModelName(for: identifier)
         #endif
     }
 }

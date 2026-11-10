@@ -21,23 +21,13 @@ public enum TimeUnit: String, CaseIterable {
 }
 
 public extension TimeUnit {
-    /// 获取单位本地化名称（中文/英文）。
+    /// 获取单位的本地化名称。
     ///
-    /// - Parameter locale: 语言环境，默认 `Locale.current`。
+    /// - Parameter locale: 传入 nil 时使用系统首选语言。
     /// - Returns: 本地化后的单位名称。
     /// - Example: `TimeUnit.second.localizedName()`
-    func localizedName(locale: Locale = .current) -> String {
-        let isChinese = locale.identifier.lowercased().hasPrefix("zh")
-        switch self {
-        case .nanosecond: return isChinese ? "纳秒" : "nanosecond"
-        case .microsecond: return isChinese ? "微秒" : "microsecond"
-        case .millisecond: return isChinese ? "毫秒" : "millisecond"
-        case .second: return isChinese ? "秒" : "second"
-        case .minute: return isChinese ? "分钟" : "minute"
-        case .hour: return isChinese ? "小时" : "hour"
-        case .day: return isChinese ? "天" : "day"
-        case .week: return isChinese ? "周" : "week"
-        }
+    func localizedName(locale: Locale? = nil) -> String {
+        SDKLocalization(locale: locale).text("unit.time.\(rawValue)")
     }
 }
 

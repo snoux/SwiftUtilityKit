@@ -20,32 +20,38 @@ public enum ConversionError: Error, LocalizedError {
     case invalidCoordinate(String)
     /// 货币单位与币种不匹配。
     case invalidMoneyUnit(currency: String, unit: String)
+    /// 金额包含分以下的尾数，无法精确拆分。
+    case inexactCNYAmount
 
-    /// 获取本地化错误描述（中文/英文）。
+    /// 按系统首选语言返回错误描述。
     public var errorDescription: String? {
-        let isChinese = Locale.preferredLanguages.first?.hasPrefix("zh") == true
+        localizedDescription(locale: nil)
+    }
 
+    /// 返回指定语言的错误描述。传入 nil 时使用系统首选语言。
+    public func localizedDescription(locale: Locale?) -> String {
+        let localization = SDKLocalization(locale: locale)
         switch self {
         case .invalidNumber(let raw):
-            return isChinese ? "无效数字：\(raw)" : "Invalid numeric value: \(raw)"
+            return localization.format("error.invalidNumber", raw)
         case .invalidBase(let base):
-            return isChinese ? "无效进制：\(base)。支持范围 2...36。" : "Invalid base: \(base). Supported range is 2...36."
+            return localization.format("error.invalidBase", String(base))
         case .invalidRadixValue(let raw, let base):
-            return isChinese ? "无效进制值：\(raw)（基数 \(base)）" : "Invalid radix value '\(raw)' for base \(base)."
+            return localization.format("error.invalidRadixValue", raw, String(base))
         case .overflow:
-            return isChinese ? "转换过程中发生数值溢出。" : "Numeric overflow during conversion."
+            return localization.text("error.overflow")
         case .invalidChineseNumeral(let raw):
-            return isChinese ? "无效中文数字：\(raw)" : "Invalid Chinese numeral: \(raw)"
+            return localization.format("error.invalidChineseNumeral", raw)
         case .invalidColor(let raw):
-            return isChinese ? "无效颜色：\(raw)" : "Invalid color: \(raw)"
+            return localization.format("error.invalidColor", raw)
         case .invalidDate(let raw):
-            return isChinese ? "无效日期：\(raw)" : "Invalid date: \(raw)"
+            return localization.format("error.invalidDate", raw)
         case .invalidCoordinate(let raw):
-            return isChinese ? "无效坐标：\(raw)" : "Invalid coordinate: \(raw)"
+            return localization.format("error.invalidCoordinate", raw)
         case .invalidMoneyUnit(let currency, let unit):
-            return isChinese
-                ? "货币单位不支持：\(currency) 不支持 \(unit)"
-                : "Unsupported money unit '\(unit)' for currency '\(currency)'."
+            return localization.format("error.invalidMoneyUnit", currency, unit)
+        case .inexactCNYAmount:
+            return localization.text("error.inexactCNYAmount")
         }
     }
 }

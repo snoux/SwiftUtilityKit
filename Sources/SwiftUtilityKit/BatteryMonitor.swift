@@ -8,8 +8,8 @@ import UIKit
 
 /// 持续监听电量、充电状态、低电量模式和温度压力等级。
 ///
-/// SwiftUI 中使用 `@State` 持有。无 UIKit 电池接口的平台仍监听低电量模式
-/// 和温度状态，但电量为 `nil`、充电状态为 `unknown`。
+/// SwiftUI 中使用 `@State` 持有。支持 macOS 内置电池和 UIKit 电池接口。
+/// 电池数据不可用时仍监听低电量模式和温度状态。
 @MainActor
 @Observable
 public final class BatteryMonitor {
@@ -84,6 +84,9 @@ final class SystemBatteryStateSource: BatteryStateSource {
     private let center: NotificationCenter
     private var observers: [any NSObjectProtocol] = []
     private var isActive = false
+    #if os(macOS)
+    private var powerSourceObservation: MacBatteryPowerObservation?
+    #endif
 
     init(center: NotificationCenter = .default) {
         self.center = center
@@ -110,6 +113,9 @@ final class SystemBatteryStateSource: BatteryStateSource {
         observers = names.map { name in
             center.addObserver(forName: name, object: nil, queue: nil) { _ in handler() }
         }
+        #if os(macOS)
+        powerSourceObservation = MacBatteryPowerObservation(handler: handler)
+        #endif
     }
 
     func stop() {
@@ -117,6 +123,9 @@ final class SystemBatteryStateSource: BatteryStateSource {
         isActive = false
         observers.forEach { center.removeObserver($0) }
         observers.removeAll()
+        #if os(macOS)
+        powerSourceObservation = nil
+        #endif
         #if canImport(UIKit) && (os(iOS) || os(visionOS))
         BatteryMonitoringLeasePool.shared.release()
         #endif
@@ -177,7 +186,9 @@ extension BatterySnapshot {
         @unknown default: thermalState = .unknown
         }
 
-        #if canImport(UIKit) && (os(iOS) || os(visionOS))
+        #if os(macOS)
+        return MacBatteryPower.snapshot(isLowPowerModeEnabled: process.isLowPowerModeEnabled, thermalState: thermalState)
+        #elseif canImport(UIKit) && (os(iOS) || os(visionOS))
         BatteryMonitoringLeasePool.shared.acquire()
         defer { BatteryMonitoringLeasePool.shared.release() }
         let device = UIDevice.current

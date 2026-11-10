@@ -16,10 +16,12 @@ struct BatteryMonitorTests {
         for level in [Float(-1), 1.1, .nan, .infinity] {
             #expect(BatterySnapshot(level: level).level == nil)
         }
-        #expect(BatterySnapshot().percentageText == "未知")
-        #expect(BatterySnapshot(level: 0).percentageText == "0%")
-        #expect(BatterySnapshot(level: 1, state: .full).percentageText == "100%")
-        #expect(BatterySnapshot(level: 0.5, state: .charging).stateText == "充电中")
+        let chinese = Locale(identifier: "zh_CN")
+        let french = Locale(identifier: "fr_FR")
+        #expect(BatterySnapshot().percentageText(locale: chinese) == "未知")
+        #expect(BatterySnapshot(level: 0).percentageText(locale: chinese) == "0%")
+        #expect(BatterySnapshot(level: 1, state: .full).percentageText(locale: chinese) == "100%")
+        #expect(BatterySnapshot(level: 0.5, state: .charging).stateText(locale: french) == "En charge")
     }
 
     @Test("Start samples immediately, lifecycle methods are idempotent, stop clears state")
@@ -194,7 +196,7 @@ struct BatteryMonitorTests {
         monitor.start()
         #expect(monitor.isLowPowerModeEnabled != nil)
         #expect(monitor.thermalState != .unknown)
-        #if !canImport(UIKit) || os(tvOS) || os(watchOS)
+        #if !os(macOS) && (!canImport(UIKit) || os(tvOS) || os(watchOS))
         #expect(monitor.batteryLevel == nil)
         #expect(monitor.batteryState == .unknown)
         #endif

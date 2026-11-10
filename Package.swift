@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "SwiftUtilityKit",
+    defaultLocalization: "en",
     platforms: [
         .iOS(.v17),
         .macOS(.v14),
@@ -21,7 +22,7 @@ let package = Package(
         .target(
             name: "SwiftUtilityKit",
             resources: [
-                .process("Resources/AppleDeviceList.txt")
+                .process("Resources")
             ]
         ),
         .testTarget(

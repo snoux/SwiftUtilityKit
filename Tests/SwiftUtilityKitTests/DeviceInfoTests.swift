@@ -20,12 +20,39 @@ struct DeviceInfoTests {
     ])
     func bundledNames(_ entry: [String]) {
         #expect(DeviceInfo.resolvedModelName(for: entry[0]) == entry[1])
+        #expect(DeviceModel(identifier: entry[0]).displayName == entry[1])
+    }
+
+    @Test("Hardware variants share a typed model")
+    func typedModelVariants() {
+        #expect(DeviceModel(identifier: "iPhone19,4") == .iPhoneDuo)
+        #expect(DeviceModel.iPhoneDuo.identifiers == ["iPhone19,4"])
+        #expect(DeviceModel(identifier: "iPhone19,3") == .iPhone18ProMax)
+        #expect(DeviceModel(identifier: "iPhone19,7") == .iPhone18ProMax)
+        #expect(DeviceModel.iPhone18ProMax.identifiers == ["iPhone19,3", "iPhone19,7"])
+        #expect(DeviceModel(identifier: "Mac16,10") == .macMini2024)
+        #expect(DeviceModel(identifier: "arm64") == .simulator)
+    }
+
+    @Test("Every bundled hardware identifier resolves to a declared model")
+    func catalogCoverage() {
+        let entries = DeviceModelCatalog.entries
+        #expect(!entries.isEmpty)
+        #expect(Set(entries.values.map(\.model)) == Set(DeviceModel.allCases.filter { $0 != .unknown }))
+        for (identifier, entry) in entries {
+            #expect(entry.model.identifiers.contains(identifier))
+            #expect(entry.model.displayName == entry.name)
+        }
     }
 
     @Test("Unknown and unavailable identifiers are preserved")
     func unknownModel() {
         #expect(DeviceInfo.resolvedModelName(for: "Mac999,1") == "Mac999,1")
         #expect(DeviceInfo.resolvedModelName(for: "") == "")
+        #expect(DeviceModel(identifier: "Mac999,1") == .unknown)
+        #expect(DeviceModel(identifier: "") == .unknown)
+        #expect(DeviceModel.unknown.displayName == nil)
+        #expect(DeviceModel.unknown.identifiers.isEmpty)
     }
 
     #if os(macOS)

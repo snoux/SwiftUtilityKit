@@ -60,6 +60,9 @@ public struct DeviceSnapshot: Codable, Equatable, Sendable {
     public let battery: BatterySnapshot
     public let storage: Storage
 
+    /// 根据快照保存的硬件标识解析机型。
+    public var model: DeviceModel { DeviceModel(identifier: modelIdentifier) }
+
     public init(
         capturedAt: Date = Date(), systemName: String, systemVersion: String,
         modelIdentifier: String, modelName: String, app: AppSnapshot,
@@ -89,34 +92,44 @@ public struct DeviceSnapshot: Codable, Equatable, Sendable {
         String(decoding: try jsonData(prettyPrinted: prettyPrinted), as: UTF8.self)
     }
 
-    /// 面向日志和反馈页的中文可读文本。
-    public var text: String {
-        let formatter = ByteCountFormatter()
-        formatter.countStyle = .file
+    /// 使用系统首选语言生成日志和反馈页的可读文本。
+    public var text: String { text(locale: nil) }
+
+    /// 使用指定语言和地区生成诊断文本。传入 nil 时跟随系统设置。
+    public func text(locale: Locale?) -> String {
+        let localization = SDKLocalization(locale: locale)
+        let unknown = localization.text("common.unknown")
+        let byteFormat = ByteCountFormatStyle(style: .file).locale(locale ?? .current)
         func capacity(_ bytes: Int64?) -> String {
-            bytes.map { formatter.string(fromByteCount: $0) } ?? "未知"
+            bytes.map { $0.formatted(byteFormat) } ?? unknown
         }
-        let powerMode = battery.isLowPowerModeEnabled.map { $0 ? "开启" : "关闭" } ?? "未知"
+        func line(_ field: String, _ value: String) -> String {
+            localization.format("diagnostic.line", localization.text("diagnostic.\(field)"), value)
+        }
+        let powerMode = battery.isLowPowerModeEnabled.map {
+            localization.text($0 ? "common.enabled" : "common.disabled")
+        } ?? unknown
         var lines = [
-            "采集时间：\(ISO8601DateFormatter().string(from: capturedAt))",
-            "系统：\(systemName) \(systemVersion)",
-            "机型：\(modelName) (\(modelIdentifier))",
-            "应用：\(app.name)",
-            "Bundle ID：\(app.bundleIdentifier)",
-            "应用版本：\(app.versionWithBuild)",
-            "电量：\(battery.percentageText)",
-            "充电状态：\(battery.stateText)",
-            "低电量模式：\(powerMode)",
-            "温度状态：\(battery.thermalState.rawValue)",
-            "总容量：\(capacity(storage.totalBytes))",
-            "剩余容量：\(capacity(storage.freeBytes))",
-            "已用容量：\(capacity(storage.usedBytes))"
+            line("capturedAt", ISO8601DateFormatter().string(from: capturedAt)),
+            line("system", "\(systemName) \(systemVersion)"),
+            line("model", "\(modelName) (\(modelIdentifier))"),
+            line("app", app.name),
+            line("bundleID", app.bundleIdentifier),
+            line("version", app.versionWithBuild),
+            line("batteryLevel", battery.percentageText(locale: locale)),
+            line("batteryState", battery.stateText(locale: locale)),
+            line("lowPowerMode", powerMode),
+            line("thermalState", battery.thermalState.rawValue),
+            line("totalStorage", capacity(storage.totalBytes)),
+            line("freeStorage", capacity(storage.freeBytes)),
+            line("usedStorage", capacity(storage.usedBytes))
         ]
         if let screen {
             lines += [
-                "逻辑分辨率：\(screen.logicalWidth)x\(screen.logicalHeight) pt",
-                "像素尺寸（bounds × scale）：\(screen.pixelWidth)x\(screen.pixelHeight) px",
-                "屏幕缩放：\(screen.scale)，原生缩放：\(screen.nativeScale)"
+                line("logicalResolution", "\(screen.logicalWidth)x\(screen.logicalHeight) pt"),
+                line("pixelResolution", "\(screen.pixelWidth)x\(screen.pixelHeight) px"),
+                line("screenScale", String(screen.scale)),
+                line("nativeScale", String(screen.nativeScale))
             ]
         }
         return lines.joined(separator: "\n")

@@ -23,6 +23,7 @@ public extension String {
     ///   - currency: 币种，默认人民币。
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 转换后的金额字符串。
     /// - Throws: `ConversionError.invalidNumber`、`ConversionError.invalidMoneyUnit`
     func convertMoneyString(
@@ -30,10 +31,11 @@ public extension String {
         to: MoneyUnit,
         currency: CurrencyCode = .cny,
         scale: Int? = nil,
-        useGrouping: Bool = false
+        useGrouping: Bool = false,
+        locale: Locale = .current
     ) throws -> String {
         let converted = try convertMoney(from: from, to: to, currency: currency)
-        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping)
+        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping, locale: locale)
     }
 
     /// 金额字符串格式化（仅用于展示，不做换算）。
@@ -41,10 +43,11 @@ public extension String {
     /// - Parameters:
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 格式化后的金额字符串。
     /// - Throws: `ConversionError.invalidNumber`
-    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true) throws -> String {
-        MoneyConversion.format(try DecimalParser.parse(self), scale: scale, useGrouping: useGrouping)
+    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true, locale: Locale = .current) throws -> String {
+        MoneyConversion.format(try DecimalParser.parse(self), scale: scale, useGrouping: useGrouping, locale: locale)
     }
 }
 
@@ -70,6 +73,7 @@ public extension BinaryInteger {
     ///   - currency: 币种，默认人民币。
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 转换后的金额字符串。
     /// - Throws: `ConversionError.invalidMoneyUnit`
     func convertMoneyString(
@@ -77,10 +81,11 @@ public extension BinaryInteger {
         to: MoneyUnit,
         currency: CurrencyCode = .cny,
         scale: Int? = nil,
-        useGrouping: Bool = false
+        useGrouping: Bool = false,
+        locale: Locale = .current
     ) throws -> String {
         let converted = try convertMoney(from: from, to: to, currency: currency)
-        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping)
+        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping, locale: locale)
     }
 
     /// 金额格式化（仅用于展示，不做换算）。
@@ -88,9 +93,10 @@ public extension BinaryInteger {
     /// - Parameters:
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 格式化后的金额字符串。
-    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true) -> String {
-        MoneyConversion.format(Decimal(string: String(self)) ?? 0, scale: scale, useGrouping: useGrouping)
+    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true, locale: Locale = .current) -> String {
+        MoneyConversion.format(Decimal(string: String(self)) ?? 0, scale: scale, useGrouping: useGrouping, locale: locale)
     }
 }
 
@@ -117,6 +123,7 @@ public extension BinaryFloatingPoint {
     ///   - currency: 币种，默认人民币。
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 转换后的金额字符串。
     /// - Throws: `ConversionError.invalidMoneyUnit`
     func convertMoneyString(
@@ -124,10 +131,11 @@ public extension BinaryFloatingPoint {
         to: MoneyUnit,
         currency: CurrencyCode = .cny,
         scale: Int? = nil,
-        useGrouping: Bool = false
+        useGrouping: Bool = false,
+        locale: Locale = .current
     ) throws -> String {
         let converted = try convertMoney(from: from, to: to, currency: currency)
-        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping)
+        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping, locale: locale)
     }
 
     /// 金额格式化（仅用于展示，不做换算）。
@@ -135,10 +143,11 @@ public extension BinaryFloatingPoint {
     /// - Parameters:
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 格式化后的金额字符串。
-    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true) -> String {
+    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true, locale: Locale = .current) -> String {
         let value = Decimal(string: String(Double(self))) ?? 0
-        return MoneyConversion.format(value, scale: scale, useGrouping: useGrouping)
+        return MoneyConversion.format(value, scale: scale, useGrouping: useGrouping, locale: locale)
     }
 }
 
@@ -164,6 +173,7 @@ public extension Decimal {
     ///   - currency: 币种，默认人民币。
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 转换后的金额字符串。
     /// - Throws: `ConversionError.invalidMoneyUnit`
     func convertMoneyString(
@@ -171,10 +181,11 @@ public extension Decimal {
         to: MoneyUnit,
         currency: CurrencyCode = .cny,
         scale: Int? = nil,
-        useGrouping: Bool = false
+        useGrouping: Bool = false,
+        locale: Locale = .current
     ) throws -> String {
         let converted = try convertMoney(from: from, to: to, currency: currency)
-        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping)
+        return MoneyConversion.format(converted, scale: scale, useGrouping: useGrouping, locale: locale)
     }
 
     /// 金额格式化（仅用于展示，不做换算）。
@@ -182,14 +193,20 @@ public extension Decimal {
     /// - Parameters:
     ///   - scale: 小数位（可选）。
     ///   - useGrouping: 是否启用千分位分组。
+    ///   - locale: 地区格式，默认使用当前系统设置。
     /// - Returns: 格式化后的金额字符串。
-    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true) -> String {
-        MoneyConversion.format(self, scale: scale, useGrouping: useGrouping)
+    func formattedMoney(scale: Int? = nil, useGrouping: Bool = true, locale: Locale = .current) -> String {
+        MoneyConversion.format(self, scale: scale, useGrouping: useGrouping, locale: locale)
     }
 
-    /// 人民币主单位金额拆分为元角分。
+    /// 将人民币主单位金额四舍五入到分后拆分。
     func splitCNY() -> CNYParts {
         MoneyConversion.splitCNY(self)
+    }
+
+    /// 按指定策略拆分元角分。
+    func splitCNY(rounding: CNYRounding) throws -> CNYParts {
+        try MoneyConversion.splitCNY(self, rounding: rounding)
     }
 }
 
@@ -197,6 +214,6 @@ public extension Decimal {
 public extension CNYParts {
     /// 元角分合并为人民币主单位金额。
     func toDecimalYuan() -> Decimal {
-        MoneyConversion.mergeCNY(yuan: yuan, jiao: jiao, fen: fen)
+        MoneyConversion.mergeCNY(self)
     }
 }
